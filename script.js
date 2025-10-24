@@ -44,7 +44,7 @@ function switchView(viewName) {
         // Botón Play siempre rojo (YouTube)
         playButton.classList.remove('bg-green-500', 'border-green-700'); 
         playButton.classList.add('bg-red-600', 'border-red-800', 'text-white'); 
-        playButton.innerHTML = '▶️ Tocar Video'; 
+        playButton.innerHTML = '▶️ DALE PLAY 🎶'; 
         urlInput.value = ''; 
         startScanner(); 
 
@@ -56,7 +56,7 @@ function switchView(viewName) {
         playButton.classList.remove('bg-green-500', 'border-green-700'); 
         playButton.classList.add('bg-red-600', 'border-red-800', 'text-white');
         statusText.textContent = "Video cargado. Presiona Play.";
-        playButton.innerHTML = '▶️ Tocar Video'; 
+        playButton.innerHTML = '▶️ DALE PLAY 🎶'; 
         playButton.classList.remove('hidden'); 
         revealButton.classList.add('hidden'); 
         iframeWrapper.classList.remove('revealed'); // Asegurar que iframe esté oculto
