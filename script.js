@@ -2,7 +2,7 @@
 const qrCodeRegionId = "reader";
 let html5QrcodeScanner = null; // Se inicializará en window.onload
 let isScannerRunning = false;
-let current = { service: null, id: null, iframe: null }; // Simplificado, sin 'kind'
+let current = { service: null, id: null, iframe: null }; 
 
 const $ = (sel) => document.querySelector(sel);
 const scannerView = $('#scanner-view');
@@ -12,14 +12,14 @@ const readerElement = $('#reader');
 const urlInput = $('#urlInput');
 const playerContainer = $('#player-container');
 const iframeWrapper = $('#iframe-wrapper');
-const statusText = $('#status-text');
+const statusText = $('#status-text'); 
 const playButton = $('#play-button');
 const revealButton = $('#reveal-button');
 
 // --- Funciones de Utilidad ---
 function displayMessage(message, type = 'info') {
     messageBox.textContent = message;
-    messageBox.classList.remove('hidden', 'bg-red-700', 'bg-green-700', 'bg-blue-500'); // Quitamos verde (Spotify)
+    messageBox.classList.remove('hidden', 'bg-red-700', 'bg-green-700', 'bg-blue-500');
     if (!message) { messageBox.classList.add('hidden'); return; }
     messageBox.classList.remove('hidden'); 
     if (type === 'error') { messageBox.classList.add('bg-red-700'); setTimeout(() => messageBox.classList.add('hidden'), 3000); } 
@@ -35,18 +35,16 @@ function switchView(viewName) {
         displayMessage(''); 
         current = { service: null, id: null, iframe: null };
         iframeWrapper.innerHTML = ''; 
-        iframeWrapper.classList.remove('revealed'); 
-        statusText.textContent = "Escanea o pega una URL de YouTube"; // Texto actualizado
+        iframeWrapper.classList.remove('revealed'); // Resetear posición iframe
+        statusText.textContent = "Escanea o pega una URL de YouTube"; 
         playButton.classList.remove('hidden');
         revealButton.classList.add('hidden');
         revealButton.disabled = false; 
         revealButton.textContent = "🔎 Revelar Video"; 
-        
         // Botón Play siempre rojo (YouTube)
-        playButton.classList.remove('bg-green-500', 'border-green-700'); // Quitar verde
-        playButton.classList.add('bg-red-600', 'border-red-800', 'text-white'); // Poner rojo
+        playButton.classList.remove('bg-green-500', 'border-green-700'); 
+        playButton.classList.add('bg-red-600', 'border-red-800', 'text-white'); 
         playButton.innerHTML = '▶️ Tocar Video'; 
-        
         urlInput.value = ''; 
         startScanner(); 
 
@@ -54,7 +52,6 @@ function switchView(viewName) {
         scannerView.classList.add('hidden');
         gameView.classList.remove('hidden');
         stopScanner(); 
-
         // Botón Play siempre rojo
         playButton.classList.remove('bg-green-500', 'border-green-700'); 
         playButton.classList.add('bg-red-600', 'border-red-800', 'text-white');
@@ -62,15 +59,15 @@ function switchView(viewName) {
         playButton.innerHTML = '▶️ Tocar Video'; 
         playButton.classList.remove('hidden'); 
         revealButton.classList.add('hidden'); 
-        iframeWrapper.classList.remove('revealed'); 
+        iframeWrapper.classList.remove('revealed'); // Asegurar que iframe esté oculto
     }
 }
 
-// --- Lógica del Escáner (con html5-qrcode) ---
+// --- Lógica del Escáner ---
 function onScanSuccess(decodedText, decodedResult) {
     console.log("Scan successful:", decodedText); 
     stopScanner(); 
-    const parsed = parseService(decodedText); // Usar parser solo para YT
+    const parsed = parseService(decodedText); 
     
     if (parsed.service === 'youtube' || parsed.service === 'youtubemusic') { // Solo aceptar YT
         current = { ...parsed, iframe: null }; 
@@ -84,37 +81,25 @@ function onScanSuccess(decodedText, decodedResult) {
 
 function onScanFailure(error) { /* Silencio */ }
 
-/**
- * startScanner CORREGIDO:
- * - Se asegura que html5QrcodeScanner esté inicializado.
- * - Elimina la verificación offsetParent que podría fallar.
- * - Llama a start() de forma más directa.
- */
 function startScanner() {
-    // Si no está inicializado, no hacer nada (debería inicializarse en window.onload)
     if (!html5QrcodeScanner) { 
-         console.error("Scanner object not initialized yet.");
-         // Reintentar inicialización por si window.onload falló o aún no corre
-         initializeScanner(); 
-         // Reintentar startScanner después de un momento
-          setTimeout(startScanner, 200); 
-         return; 
+         console.error("Scanner object not initialized.");
+         displayMessage("Error: Escáner no inicializado.", "error");
+         // Intentar inicializar de nuevo por si acaso
+         if (!initializeScanner()) return; // Si falla de nuevo, salir
     }
-
+    if (!readerElement) {
+        console.error("Reader element not found!");
+        displayMessage("Error: Contenedor del scanner no encontrado.", "error");
+        return;
+    }
+    
     if (!isScannerRunning) {
         console.log("Attempting to start scanner..."); 
-        // Verificar si el elemento reader existe
-        if (!readerElement) {
-            console.error("Reader element not found!");
-            displayMessage("Error: Contenedor del scanner no encontrado.", "error");
-            return;
-        }
-        // Limpiar el contenido previo por si acaso
-        readerElement.innerHTML = ""; 
+        readerElement.innerHTML = ""; // Limpiar antes de iniciar
 
         const config = { fps: 10, qrbox: { width: 250, height: 250 } };
         
-        // Intenta iniciar la cámara
         html5QrcodeScanner.start( { facingMode: "environment" }, config, onScanSuccess, onScanFailure)
         .then(() => { 
             isScannerRunning = true; 
@@ -129,44 +114,29 @@ function startScanner() {
             else if (err.name === 'NotReadableError') errorMsg = "La cámara está en uso.";
             displayMessage(errorMsg, "error");
             isScannerRunning = false; 
-            // Opcional: Mostrar un mensaje permanente si la cámara falla gravemente
-            // readerElement.innerHTML = `<p class='text-red-500 p-4 text-center'>${errorMsg}</p>`;
         });
     } else {
          console.log("Scanner start requested but already running."); 
     }
 }
 
-
 function stopScanner() {
     if (html5QrcodeScanner && isScannerRunning) { 
         console.log("Attempting to stop scanner..."); 
         try {
-            // Guardar el estado actual antes de llamar a stop
-            const currentScannerState = typeof html5QrcodeScanner.getState === 'function' ? html5QrcodeScanner.getState() : null;
-            // Solo llamar a stop si está realmente escaneando (estado 2)
-            // if (currentScannerState === 2 /* SCANNING */ || currentScannerState === 1 /* IDLE, but might have camera active */) {
-                html5QrcodeScanner.stop()
-                .then(() => { 
-                    isScannerRunning = false; 
-                    console.log("Scanner stopped successfully."); 
-                    if(readerElement) readerElement.innerHTML = ""; 
-                })
-                .catch((err) => { 
-                    // Ignorar errores comunes de "stop called when not scanning"
-                    if (!err.message || !err.message.toLowerCase().includes("not scanning")) {
-                        console.warn("Error stopping scanner:", err); 
-                    } else {
-                         console.log("Scanner reported 'not scanning' during stop, likely already stopped.");
-                    }
-                    isScannerRunning = false; // Asumir detenido
-                    if(readerElement) readerElement.innerHTML = ""; 
-                });
-            // } else {
-            //      console.log(`Scanner not stopped because state is ${currentScannerState}`);
-            //      isScannerRunning = false; // Sincronizar estado si no estaba escaneando
-            //      if(readerElement) readerElement.innerHTML = ""; 
-            // }
+            html5QrcodeScanner.stop()
+            .then(() => { 
+                isScannerRunning = false; 
+                console.log("Scanner stopped successfully."); 
+                if(readerElement) readerElement.innerHTML = ""; 
+            })
+            .catch((err) => { 
+                if (!err || !err.message || !err.message.toLowerCase().includes("not scanning")) {
+                    console.warn("Error stopping scanner:", err); 
+                } else { console.log("Stop called but scanner wasn't running."); }
+                isScannerRunning = false; 
+                if(readerElement) readerElement.innerHTML = ""; 
+            });
         } catch (e) { 
             console.error("Exception stopping scanner:", e); 
             isScannerRunning = false; 
@@ -192,96 +162,45 @@ function loadFromInput() {
 
 // --- Lógica del Juego ---
 
-/**
- * parseService SIMPLIFICADO: Solo YouTube
- */
+// parseService SIMPLIFICADO: Solo YouTube
 function parseService(url) {
     try {
-        url = url.trim(); 
-        let u = null; 
-        try { u = new URL(url); } catch (e) { /* Podría no ser URL estándar */ } 
-        const host = u ? u.hostname.replace(/^www\./,'').toLowerCase() : '';
-
-        // YouTube / YT Music
+        url = url.trim(); let u = null; try { u = new URL(url); } catch (e) {} const host = u ? u.hostname.replace(/^www\./,'').toLowerCase() : '';
         if (host.includes('youtube.com') || host === 'youtu.be' || host.includes('music.youtube.com')) {
-            let v = null; 
-            if (host === 'youtu.be') { v = u.pathname.slice(1).split('/')[0]; } 
-            else if (u) { v = u.searchParams.get('v'); } // Solo buscar 'v' si 'u' es válido
-            
-            // Intentar extraer de path si no se encontró 'v'
-            if (!v && u && u.pathname.startsWith('/shorts/')) { v = u.pathname.split('/')[2] || null; } 
-            if (!v && u && u.pathname.startsWith('/embed/')) { v = u.pathname.split('/')[2] || null; } 
-            
-            // Validar formato del ID extraído
-            if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) { 
-               return { service: host.includes('music.youtube.com') ? 'youtubemusic' : 'youtube', id: v };
-            }
+            let v = null; if (host === 'youtu.be') { v = u.pathname.slice(1).split('/')[0]; } else if (u) { v = u.searchParams.get('v'); } if (!v && u && u.pathname.startsWith('/shorts/')) { v = u.pathname.split('/')[2] || null; } if (!v && u && u.pathname.startsWith('/embed/')) { v = u.pathname.split('/')[2] || null; } if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) return { service: host.includes('music.youtube.com') ? 'youtubemusic' : 'youtube', id: v };
         }
-        
-        // Si no es YouTube, retornar null
-        return { service: null, id: null };
-    } catch(e) { 
-        console.error("Parse URL Error:", url, e); 
-        return { service: null, id: null }; 
-    }
+        return { service: null, id: null }; // No es YouTube
+    } catch(e) { console.error("Parse URL Error:", url, e); return { service: null, id: null }; }
 }
 
-/**
- * buildEmbed SIMPLIFICADO: Solo YouTube
- */
-function buildEmbed({ service, id }) { // Ya no necesita 'kind'
-    if (service !== 'youtube' && service !== 'youtubemusic') return null; // Salir si no es YT
-
-    let src = ''; 
-    let title = 'YouTube Player'; 
-    let allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture; web-share';
-    
-    // Parámetros: autoplay=1, controls=0 (ocultos por CSS), enablejsapi=1 (para control)
-    const params = new URLSearchParams({ 
-        autoplay: '1', 
-        controls: '0', 
-        modestbranding: '1', 
-        rel: '0', 
-        playsinline: '1', 
-        enablejsapi: '1' 
-    });
-    // Añadir 'origin' si es posible (ayuda a la API JS)
+// buildEmbed SIMPLIFICADO: Solo YouTube
+function buildEmbed({ service, id }) {
+    if (service !== 'youtube' && service !== 'youtubemusic') return null; 
+    let src = ''; let title = 'YouTube Player'; let allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture; web-share';
+    const params = new URLSearchParams({ autoplay: '1', controls: '0', modestbranding: '1', rel: '0', playsinline: '1', enablejsapi: '1' });
     try { if (location.origin && location.origin.startsWith('http')) params.set('origin', location.origin); } catch {}
-    
     src = `https://www.youtube.com/embed/${id}?${params.toString()}`; 
-            
     const iframe = document.createElement('iframe'); 
-    iframe.src = src; 
-    iframe.title = title; 
-    iframe.loading = 'lazy'; 
-    iframe.allow = allow; 
-    iframe.allowFullscreen = true; 
-    iframe.style.borderRadius = '12px'; // Mantener redondeo
+    iframe.src=src; iframe.title=title; iframe.loading='lazy'; iframe.allow=allow; 
+    iframe.allowFullscreen=true; iframe.style.borderRadius='12px'; 
     return iframe;
 }
 
-/**
- * playSong SIMPLIFICADO: Solo YouTube
- */
+// Inicia la reproducción (v18 - con play explícito)
 function playSong() {
     console.log("playSong called"); 
     if (!current.service || !current.id) { displayMessage("No hay video cargado.", "error"); return; }
-    if (current.service !== 'youtube' && current.service !== 'youtubemusic') {
-         displayMessage("Servicio no soportado (Solo YouTube).", "error"); return;
-    }
+    if (current.service !== 'youtube' && current.service !== 'youtubemusic') { displayMessage("Servicio no soportado.", "error"); return; }
     
     const iframe = buildEmbed(current);
     if (!iframe) { displayMessage("Error al crear reproductor.", "error"); return; }
     
-    iframeWrapper.innerHTML = ''; 
-    iframeWrapper.appendChild(iframe); 
-    current.iframe = iframe; 
+    iframeWrapper.innerHTML = ''; iframeWrapper.appendChild(iframe); current.iframe = iframe; 
     
-    // Actualizar UI
     playButton.classList.add('hidden');       
     revealButton.classList.remove('hidden');   
     statusText.textContent = "Video Sonando..."; 
-    displayMessage(''); // Limpiar mensaje superior
+    displayMessage(''); 
 
     // --- INTENTO DE PLAY EXPLÍCITO ---
     setTimeout(() => {
@@ -289,41 +208,41 @@ function playSong() {
         console.log("Sending 'playVideo' command to YouTube"); 
         const playMsg = JSON.stringify({ event:'command', func:'playVideo', args:[] });
         current.iframe.contentWindow?.postMessage(playMsg, '*'); 
-    }, 500); // Esperar medio segundo
+    }, 500); 
 }
 
-/**
- * revealPlayer: Solo revela el iframe (quita clip-path)
- */
+// Revela el reproductor (Mueve el iframe a la vista)
 function revealPlayer() { 
     console.log("revealPlayer called"); 
-    iframeWrapper.classList.add('revealed'); // Muestra el iframe
+    iframeWrapper.classList.add('revealed'); // Baja el iframe
     revealButton.textContent = "¡Revelado!";
     revealButton.disabled = true;
-    if(current.iframe) current.iframe.focus(); // Enfocar por si acaso
+    if(current.iframe) current.iframe.focus(); 
 }
 
 // --- Inicialización ---
-
-/**
- * Función para inicializar el scanner (se llama en window.onload)
- */
- function initializeScanner() {
-     if (!html5QrcodeScanner) { // Solo inicializar una vez
+function initializeScanner() {
+     if (!html5QrcodeScanner) { 
          try {
-             if (!readerElement) throw new Error("Element with ID 'reader' not found during init.");
+             if (!readerElement) throw new Error("Element '#reader' not found during init.");
              html5QrcodeScanner = new Html5Qrcode(qrCodeRegionId); 
-             console.log("html5QrcodeScanner initialized on load."); // DEBUG
+             console.log("html5QrcodeScanner initialized successfully.");
+             return true; 
          } catch (e) {
-              console.error("Fatal: Failed to initialize html5QrcodeScanner on load:", e);
+              console.error("Fatal: Failed to initialize html5QrcodeScanner:", e);
               displayMessage("Error fatal: No se pudo inicializar el lector QR.", "error");
               if(scannerView) scannerView.innerHTML = "<p class='text-red-500 text-center'>Escáner no disponible.</p>";
+              return false; 
          }
      }
+      return true; // Ya estaba inicializado
  }
 
 window.onload = () => { 
      console.log("Window loaded. Initializing..."); 
-     initializeScanner(); // Llamar a la función que inicializa
-     switchView('scanner'); // Mostrar vista inicial
+     if (initializeScanner()) { 
+         switchView('scanner'); 
+     } else {
+          console.error("Scanner initialization failed.");
+     }
 };
