@@ -1,401 +1,484 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Hitster LITE v12</title>
-<meta name="theme-color" content="#0f172a" />
-<style>
-  :root{
-    --bg:#0f172a; --panel:#111827; --muted:#94a3b8; --text:#e5e7eb;
-    --accent:#22c55e; --accent2:#10b981; --danger:#ef4444; --warn:#f59e0b;
-    --border:rgba(148,163,184,.25);
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0; background:#0b1220; color:var(--text);
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans";
-    display:flex; align-items:center; justify-content:center; padding:16px;
-  }
-  .app{ width:min(900px,100%); background:var(--panel); border:1px solid var(--border);
-        border-radius:14px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.35)}
-  header{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px}
-  h1{font-size:20px; margin:0}
-  .sub{color:var(--muted); margin:4px 0 0}
-  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
-  .panel{background:#0b1220; border:1px solid var(--border); border-radius:12px; padding:12px}
-  input[type="url"], input[type="file"]{
-    flex:1; min-width:220px; background:#0b1220; color:var(--text);
-    border:1px solid var(--border); padding:10px 12px; border-radius:10px; outline:none;
-  }
-  .btn{
-    appearance:none; border:0; cursor:pointer; user-select:none;
-    padding:10px 14px; border-radius:10px; font-weight:700; letter-spacing:.2px;
-    color:#08140c; background:linear-gradient(180deg,var(--accent),var(--accent2));
-  }
-  .btn.secondary{ background:#0b1220; color:#cbd5e1; border:1px solid var(--border) }
-  .btn.warn{ background:linear-gradient(180deg,var(--warn),#d97706); color:#101010 }
-  .btn.danger{ background:linear-gradient(180deg,var(--danger),#b91c1c); color:#fff }
-  .pill{ font-size:12px; color:var(--muted) }
-  .grid{ display:grid; gap:12px; grid-template-columns: 1fr; }
-  @media(min-width:880px){ .grid{ grid-template-columns: 1.1fr .9fr } }
-  .playerBox{ position:relative; aspect-ratio:16/9; width:100%; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#000 }
-  iframe,audio{ width:100%; height:100%; border:0; display:block; background:#000 }
-  /* Overlay inicial con botones */
-  .overlay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-            background:rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:opacity .2s ease }
-  .overlay.show{ opacity:1; pointer-events:auto }
-  .cta{ background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.2);
-        padding:14px; border-radius:12px; text-align:center; max-width:min(95%,520px)}
-  /* Cover para ocultar video/caratula mientras suena */
-  .cover{ position:absolute; inset:0; background:#0b1220; display:none; align-items:center; justify-content:center;
-          border-top:1px solid rgba(255,255,255,.03); border-bottom:1px solid rgba(255,255,255,.03) }
-  .cover.show{ display:flex }
-  .cover .msg{ color:#cbd5e1; text-align:center; }
-  .status{ margin-top:8px; color:var(--muted); font-size:12px }
-  /* Scanner */
-  .scanner{ display:none; margin-top:8px; }
-  .scanner.show{ display:block }
-  video#qrVideo{ width:100%; border-radius:10px; border:1px solid var(--border); background:#000 }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hitster LITE (v12 - Simple)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    
+    <style>
+        :root {
+            --primary-color: #1DB954; /* Spotify Green */
+            --youtube-color: #FF0000; /* YouTube Red */
+        }
+        body { background-color: #121212; /* Fondo oscuro */ }
+        /* Contenedor del reproductor (EL TRUCO) */
+        #player-container {
+            position: relative; width: 100%; height: 80px; 
+            border-radius: 12px; overflow: hidden; /* ¡LA CLAVE! */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7); background-color: #000;
+        }
+        /* Wrapper del iframe (EL TRUCO) */
+        #iframe-wrapper {
+            position: absolute; width: 100%; height: 400px; 
+            top: -310px; /* ¡LA CLAVE! */ left: 0;
+        }
+        #iframe-wrapper iframe { width: 100%; height: 100%; border: none; }
+        
+        /* Capa "Tapa" que cubre el área del reproductor */
+        #cover-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(0, 0, 0, 0.98));
+            transition: opacity 0.4s ease-in-out; z-index: 10;
+        }
+        /* Clase para ocultar la tapa al presionar "Revelar" */
+        .cover-hidden { opacity: 0; pointer-events: none; }
+    </style>
 </head>
-<body>
-<div class="app" role="application" aria-label="Hitster LITE v12">
-  <header>
-    <h1>Hitster LITE</h1>
-    <p class="sub">Escanea el QR o pega el enlace. Luego pulsa <strong>Tocar música</strong>.</p>
-  </header>
 
-  <div class="grid">
-    <!-- Reproductor -->
-    <section class="panel" aria-labelledby="sec-player">
-      <h2 id="sec-player" style="margin:0 0 8px; font-size:14px; color:#cbd5e1">Reproductor</h2>
-      <div id="playerBox" class="playerBox">
-        <div id="overlay" class="overlay show" aria-hidden="false">
-          <div class="cta">
-            <p style="margin:0 0 8px">♫ Escanea o pega la URL. Cuando estés listo…</p>
-            <div class="row" style="justify-content:center">
-              <button id="btnPlay" class="btn" type="button">▶️ Tocar música</button>
-              <button id="btnReveal" class="btn secondary" type="button">🔎 Revelar</button>
-              <button id="btnMute" class="btn secondary" type="button">🔇 Silencio</button>
+<body class="flex justify-center items-start min-h-screen p-4 font-sans text-gray-200">
+
+    <div class="w-full max-w-md mx-auto space-y-6">
+        <h1 class="text-4xl font-extrabold text-center text-white pt-4 tracking-tight">HITSTER LITE</h1>
+        <p class="text-center text-sm text-gray-400">Escanea el QR o pega el enlace, luego presiona Tocar Música.</p>
+
+        <div id="message-box" class="hidden p-3 rounded-xl text-base font-semibold text-center transition-all duration-300"></div>
+
+        <div id="scanner-view">
+            <h2 class="text-xl font-semibold mb-3 text-white">Escanea la Tarjeta Musical:</h2>
+            <div id="reader" class="w-full aspect-square rounded-2xl overflow-hidden shadow-lg bg-gray-900"></div>
+            <div class="mt-4 flex gap-2">
+                 <input id="urlInput" type="url" placeholder="O pega la URL aquí..." class="flex-grow bg-gray-800 text-white border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"/>
+                 <button onclick="loadFromInput()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg text-sm">Cargar</button>
             </div>
-            <p class="pill" style="margin-top:8px">El audio no iniciará sin tu toque (política del navegador).</p>
-          </div>
+            <p class="text-xs text-center text-gray-500 mt-3">Soporta Spotify, YouTube y YouTube Music.</p>
         </div>
-        <!-- Cover para ocultar el contenido visual mientras suena -->
-        <div id="cover" class="cover">
-          <div class="msg">
-            <div style="font-weight:700;">Reproduciendo en modo oculto</div>
-            <div class="pill">Pulsa “Revelar” si quieres ver el video/caratula.</div>
-          </div>
+
+        <div id="game-view" class="hidden space-y-6">
+            <h2 class="text-xl font-semibold text-center text-white">¡Es Hora de Jugar!</h2>
+            
+            <div id="player-container">
+                <div id="iframe-wrapper"></div> 
+                
+                <div id="cover-layer" class="flex flex-col justify-center items-center text-center p-4">
+                    <div id="cover-icon" class="text-6xl mb-4 text-green-500" aria-label="Icono">♫</div>
+                    
+                    <p id="cover-text" class="text-lg font-semibold uppercase tracking-wider text-white mb-6">
+                        ¡Escaneo exitoso! <br>Presiona para iniciar.
+                    </p>
+                    
+                    <button onclick="playSong()" id="play-button"
+                            class="py-3 px-8 mb-4 font-bold rounded-full uppercase shadow-lg transition-transform duration-100 ease-in-out transform hover:scale-105 border-2 text-white">
+                        Tocar Música
+                    </button>
+
+                    <button onclick="revealPlayer()" id="reveal-button"
+                            class="py-2 px-6 text-sm font-bold rounded-full uppercase shadow-md transition-transform duration-100 ease-in-out transform hover:scale-105 hidden 
+                                   bg-red-600 text-white border-2 border-red-800">
+                        Revelar Pista
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex justify-center">
+                <button onclick="switchView('scanner')"
+                        class="py-3 px-8 font-bold rounded-full uppercase shadow-lg transition-transform duration-100 ease-in-out transform hover:scale-105
+                               bg-gray-700 text-white hover:bg-gray-600 border-2 border-gray-900">
+                    Escanear Nueva Tarjeta
+                </button>
+            </div>
         </div>
-        <!-- Iframe/audio se inyecta dinámicamente -->
-      </div>
-      <div class="status">Estado: <span id="status">esperando URL…</span></div>
-    </section>
+    </div>
 
-    <!-- Entrada + QR -->
-    <section class="panel" aria-labelledby="sec-input">
-      <h2 id="sec-input" style="margin:0 0 8px; font-size:14px; color:#cbd5e1">Entrada</h2>
-      <div class="row">
-        <input id="urlInput" type="url" inputmode="url" placeholder="Pega enlace de YouTube / YouTube Music / Spotify…" aria-label="URL de la canción" />
-        <button id="btnLoad" class="btn" type="button">Cargar</button>
-      </div>
+    <script>
+        // --- Variables Globales ---
+        const qrCodeRegionId = "reader";
+        let html5QrcodeScanner = null;
+        let isScannerRunning = false;
+        let current = { service: null, id: null, kind: null, iframe: null };
+        
+        // --- Selectores de Elementos ---
+        const $ = (sel) => document.querySelector(sel);
+        const scannerView = $('#scanner-view');
+        const gameView = $('#game-view');
+        const messageBox = $('#message-box');
+        const readerElement = $('#reader'); // Necesario para inicializar el scanner
+        const urlInput = $('#urlInput');
+        const playerContainer = $('#player-container'); // Contenedor principal del reproductor
+        const iframeWrapper = $('#iframe-wrapper');
+        const coverLayer = $('#cover-layer');
+        const coverIcon = $('#cover-icon');
+        const coverText = $('#cover-text');
+        const playButton = $('#play-button');
+        const revealButton = $('#reveal-button');
 
-      <div class="row" style="margin-top:8px">
-        <button id="btnScan" class="btn secondary" type="button">📷 Escanear QR</button>
-        <input id="fileInput" type="file" accept="image/*" style="display:none" />
-        <button id="btnStopScan" class="btn secondary" type="button">⏹️ Detener</button>
-        <span class="pill">Tip: también puedes abrir <code>?u=URL</code> desde el QR.</span>
-      </div>
+        // --- Funciones de Utilidad ---
+        function displayMessage(message, type = 'info') {
+            messageBox.textContent = message;
+            messageBox.classList.remove('hidden', 'bg-red-700', 'bg-green-700', 'bg-blue-500');
 
-      <!-- Bloque del escáner -->
-      <div id="scanner" class="scanner">
-        <video id="qrVideo" playsinline muted></video>
-        <div class="row" style="margin-top:6px">
-          <span class="pill" id="scanStatus">Preparando cámara…</span>
-        </div>
-      </div>
-    </section>
-  </div>
-</div>
-
-<script>
-  // ======= Utilidades / Estado =======
-  const $ = s => document.querySelector(s);
-  const statusEl = $('#status');
-  const playerBox = $('#playerBox');
-  const overlay = $('#overlay');
-  const cover = $('#cover');
-  const urlInput = $('#urlInput');
-  const btnLoad = $('#btnLoad');
-  const btnPlay = $('#btnPlay');
-  const btnReveal = $('#btnReveal');
-  const btnMute = $('#btnMute');
-  const btnScan = $('#btnScan');
-  const btnStopScan = $('#btnStopScan');
-  const fileInput = $('#fileInput');
-  const scannerWrap = $('#scanner');
-  const qrVideo = $('#qrVideo');
-  const scanStatus = $('#scanStatus');
-
-  let current = {
-    service: null, id: null, kind: null,
-    muted: false, ready: false, iframe: null,
-    concealed: true
-  };
-
-  let scanStream = null;
-  let scanLoop = null;
-  let barcodeDetector = null;
-
-  const setStatus = (t) => statusEl.textContent = t;
-
-  // ======= Detección de servicio =======
-  function parseService(url) {
-    try {
-      const u = new URL(url);
-      const host = u.hostname.replace(/^www\./,'').toLowerCase();
-
-      if (host.includes('youtube.com') || host === 'youtu.be' || host.includes('music.youtube.com')) {
-        let videoId = null;
-        if (host === 'youtu.be') {
-          videoId = u.pathname.slice(1);
-        } else {
-          videoId = u.searchParams.get('v');
-          if (!videoId && u.pathname.startsWith('/shorts/')) {
-            videoId = u.pathname.split('/')[2] || null;
-          }
-        }
-        if (videoId) {
-          return { service: host.includes('music.youtube.com') ? 'youtubemusic' : 'youtube', id: videoId };
-        }
-      }
-
-      if (host.includes('spotify.com')) {
-        const parts = u.pathname.split('/').filter(Boolean);
-        const type = parts[0]; const id = parts[1];
-        if ((type === 'track' || type === 'playlist') && id) {
-          return { service:'spotify', id, kind:type };
-        }
-      }
-      return { service:null, id:null };
-    } catch { return { service:null, id:null } }
-  }
-
-  // ======= Construcción del embed =======
-  function buildEmbed({ service, id, kind }) {
-    let src = '', title = 'Reproductor', allow = 'autoplay; encrypted-media; clipboard-write; picture-in-picture; web-share';
-
-    if (service === 'youtube' || service === 'youtubemusic') {
-      const params = new URLSearchParams({
-        autoplay: '0', controls: '1', modestbranding:'1', rel:'0', playsinline:'1', enablejsapi:'1'
-      });
-      // origin ayuda a la IFrame API; no sirve en file://
-      try {
-        if (location.origin && location.origin.startsWith('http')) params.set('origin', location.origin);
-      } catch {}
-      src = `https://www.youtube.com/embed/${id}?${params.toString()}`;
-      title = 'YouTube Player';
-    } else if (service === 'spotify') {
-      const path = (kind === 'playlist') ? 'playlist' : 'track';
-      src = `https://open.spotify.com/embed/${path}/${id}?utm_source=generator&theme=0`;
-      title = 'Spotify Player';
-    }
-
-    if (!src) return null;
-
-    const iframe = document.createElement('iframe');
-    iframe.src = src;
-    iframe.title = title;
-    iframe.loading = 'lazy';
-    iframe.allow = allow;
-    iframe.allowFullscreen = true;
-    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-    return iframe;
-  }
-
-  function clearPlayer() {
-    playerBox.querySelectorAll('iframe, audio').forEach(n => n.remove());
-    current.iframe = null;
-  }
-
-  function loadPlayerFrom(url) {
-    const { service, id, kind } = parseService(url);
-    current.service = service; current.id = id; current.kind = kind || null;
-    current.ready = false; current.muted = false;
-
-    clearPlayer();
-    if (!service || !id) {
-      setStatus('URL inválida o no soportada.');
-      overlay.classList.add('show');
-      cover.classList.remove('show');
-      return;
-    }
-
-    const iframe = buildEmbed({ service, id, kind });
-    if (!iframe) {
-      setStatus('No se pudo crear el reproductor.');
-      overlay.classList.add('show');
-      cover.classList.remove('show');
-      return;
-    }
-
-    current.iframe = iframe;
-    playerBox.prepend(iframe);
-
-    iframe.addEventListener('load', () => {
-      current.ready = true;
-      setStatus(`Listo: ${service.toUpperCase()} (${id})`);
-      overlay.classList.add('show'); // mantenemos botón visible hasta tocar
-    });
-
-    urlInput.value = url;
-  }
-
-  // ======= Reproducir / Mute / Revelar =======
-  async function playCurrent(){
-    if (!current.iframe) { setStatus('Primero carga una URL.'); return; }
-    try {
-      overlay.classList.remove('show');
-      setStatus('Intentando reproducir…');
-
-      if (current.service === 'youtube' || current.service === 'youtubemusic') {
-        // Para maximizar el éxito, arranca muteado y luego puedes activar sonido.
-        const muteMsg = JSON.stringify({ event:'command', func:'mute', args:[] });
-        current.iframe.contentWindow.postMessage(muteMsg, '*');
-        const playMsg = JSON.stringify({ event:'command', func:'playVideo', args:[] });
-        current.iframe.contentWindow.postMessage(playMsg, '*');
-        current.muted = true;
-        btnMute.textContent = '🔈 Con sonido';
-        // Modo oculto activo tras Play
-        current.concealed = true;
-        cover.classList.add('show');
-        setStatus('Reproduciendo (YouTube)…');
-      } else if (current.service === 'spotify') {
-        // Spotify normalmente requiere pulsar Play dentro del embed.
-        current.iframe.focus();
-        current.concealed = true;
-        cover.classList.add('show');
-        setStatus('Spotify listo. Si no inicia, pulsa ▶ dentro del reproductor.');
-      }
-    } catch {
-      overlay.classList.add('show');
-      setStatus('No se pudo iniciar. Vuelve a pulsar Tocar música.');
-    }
-  }
-
-  function toggleMute(){
-    if (!current.iframe) return;
-    current.muted = !current.muted;
-    if (current.service === 'youtube' || current.service === 'youtubemusic') {
-      const cmd = current.muted ? 'mute' : 'unMute';
-      const msg = JSON.stringify({ event:'command', func:cmd, args:[] });
-      current.iframe.contentWindow.postMessage(msg, '*');
-    }
-    btnMute.textContent = current.muted ? '🔈 Con sonido' : '🔇 Silencio';
-  }
-
-  function reveal(){
-    current.concealed = false;
-    cover.classList.remove('show');
-    setStatus('Contenido revelado.');
-  }
-
-  // ======= Escáner QR =======
-  async function startScan(){
-    // Si BarcodeDetector no está, usamos fallback de imagen.
-    const supported = ('BarcodeDetector' in window);
-    if (!supported) {
-      scanStatus.textContent = 'Tu navegador no soporta escaneo en vivo. Sube una imagen con el QR.';
-      fileInput.click();
-      return;
-    }
-
-    try {
-      const formats = await BarcodeDetector.getSupportedFormats();
-      if (!formats.includes('qr_code')) throw new Error('No hay soporte para QR.');
-      barcodeDetector = new BarcodeDetector({ formats:['qr_code'] });
-    } catch {
-      scanStatus.textContent = 'No hay soporte de QR nativo. Sube una imagen con el QR.';
-      fileInput.click();
-      return;
-    }
-
-    // Pedimos cámara
-    try {
-      scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'environment' }, audio:false });
-      qrVideo.srcObject = scanStream;
-      await qrVideo.play();
-
-      scannerWrap.classList.add('show');
-      scanStatus.textContent = 'Escaneando… apunta al código QR.';
-
-      const detect = async () => {
-        if (!barcodeDetector) return;
-        try {
-          const codes = await barcodeDetector.detect(qrVideo);
-          if (codes && codes.length) {
-            const value = (codes[0].rawValue || '').trim();
-            stopScan();
-            if (value) {
-              setStatus('QR detectado. Cargando…');
-              loadPlayerFrom(value);
-            } else {
-              setStatus('QR vacío.');
+            if (type === 'error') {
+                messageBox.classList.add('bg-red-700');
+                // Errores desaparecen solos
+                setTimeout(() => messageBox.classList.add('hidden'), 3000);
+            } else if (type === 'success') {
+                messageBox.classList.add('bg-green-700'); // Verde para éxito (Spotify)
+                 // Mensajes de éxito NO desaparecen solos
+            } else if (type === 'youtube') {
+                 messageBox.classList.add('bg-red-700'); // Rojo para YouTube
+                 // Mensajes de YouTube NO desaparecen solos
+            } else { // info
+                messageBox.classList.add('bg-blue-500');
+                 // Mensajes informativos (como 'Pista sonando') NO desaparecen solos
             }
-            return; // salimos del bucle
-          }
-        } catch {}
-        scanLoop = requestAnimationFrame(detect);
-      };
-      scanLoop = requestAnimationFrame(detect);
-    } catch (e) {
-      scannerWrap.classList.remove('show');
-      setStatus('No se pudo acceder a la cámara. Revisa permisos del navegador.');
-    }
-  }
+             if (message) { // Mostrar solo si hay mensaje
+                messageBox.classList.remove('hidden');
+            } else {
+                 messageBox.classList.add('hidden'); // Ocultar si no hay mensaje
+            }
+        }
 
-  function stopScan(){
-    if (scanLoop) cancelAnimationFrame(scanLoop), scanLoop = null;
-    if (qrVideo) { qrVideo.pause(); qrVideo.srcObject = null; }
-    if (scanStream) {
-      scanStream.getTracks().forEach(t => t.stop());
-      scanStream = null;
-    }
-    scannerWrap.classList.remove('show');
-    scanStatus.textContent = 'Escaneo detenido.';
-  }
+        function switchView(viewName) {
+            if (viewName === 'scanner') {
+                gameView.classList.add('hidden');
+                scannerView.classList.remove('hidden');
+                displayMessage(''); // Limpiar mensaje
+                
+                // Reiniciar estado del juego
+                current = { service: null, id: null, kind: null, iframe: null };
+                iframeWrapper.innerHTML = ''; 
+                coverLayer.classList.remove('cover-hidden'); // Mostrar tapa
+                playButton.classList.remove('hidden');
+                revealButton.classList.add('hidden');
+                coverText.innerHTML = "¡Escaneo exitoso! <br>Presiona para iniciar.";
+                
+                // Resetear botón a estilo Spotify por defecto
+                playButton.classList.remove('bg-red-600', 'border-red-800');
+                playButton.classList.add('bg-green-500', 'border-green-700');
+                coverIcon.style.color = "var(--primary-color)";
+                coverIcon.innerHTML = '♫';
 
-  // Fallback: analizar imagen subida (solo como puente; no decodifica sin lib extra)
-  // Aquí simplemente usamos la API de navegador para leer texto del nombre si el QR no está soportado.
-  // Si quieres decodificación real de imágenes, puedo integrar una librería CDN (html5-qrcode o qr-scanner).
-  fileInput.addEventListener('change', () => {
-    const f = fileInput.files && fileInput.files[0];
-    if (!f) return;
-    setStatus('Imagen recibida. (Para decodificación real puedo integrar una librería externa).');
-  });
+                urlInput.value = ''; // Limpiar input de URL
+                startScanner(); // Iniciar cámara
 
-  // ======= Eventos =======
-  btnLoad.addEventListener('click', () => {
-    const u = urlInput.value.trim();
-    if (!u) { setStatus('Pega una URL.'); return; }
-    loadPlayerFrom(u);
-  });
-  btnPlay.addEventListener('click', playCurrent);
-  btnReveal.addEventListener('click', reveal);
-  btnMute.addEventListener('click', toggleMute);
-  btnScan.addEventListener('click', startScan);
-  btnStopScan.addEventListener('click', stopScan);
+            } else if (viewName === 'game') {
+                scannerView.classList.add('hidden');
+                gameView.classList.remove('hidden');
+                stopScanner(); // Detener cámara
 
-  // Soporte ?u= en la URL
-  (function initFromQuery(){
-    const q = new URLSearchParams(location.search);
-    const u = q.get('u');
-    if (u) loadPlayerFrom(u);
-    else setStatus('esperando URL…');
-  })();
-</script>
+                // Ajustar estilo del botón Play según el servicio
+                if (current.service === 'youtube' || current.service === 'youtubemusic') {
+                    playButton.classList.remove('bg-green-500', 'border-green-700');
+                    playButton.classList.add('bg-red-600', 'border-red-800');
+                    coverIcon.style.color = "var(--youtube-color)";
+                    coverIcon.innerHTML = '►'; 
+                } else { // Spotify
+                    playButton.classList.remove('bg-red-600', 'border-red-800');
+                    playButton.classList.add('bg-green-500', 'border-green-700');
+                    coverIcon.style.color = "var(--primary-color)";
+                    coverIcon.innerHTML = '♫'; 
+                }
+            }
+        }
+
+        // --- Lógica del Escáner (usando html5-qrcode) ---
+        function onScanSuccess(decodedText, decodedResult) {
+            // Detener escaneo inmediatamente
+            stopScanner();
+            
+            // Analizar la URL detectada
+            const parsed = parseService(decodedText);
+            
+            if (parsed.service && parsed.id) {
+                current = { ...parsed, iframe: null, concealed: true }; // Guardar datos, resetear iframe
+                let serviceName = (parsed.service === 'youtube' || parsed.service === 'youtubemusic') ? 'YouTube' : 'Spotify';
+                displayMessage(`¡QR de ${serviceName} cargado!`, parsed.service === 'youtube' ? 'youtube' : 'success');
+                switchView('game'); // Cambiar a la vista del juego
+            } else {
+                displayMessage("QR no válido. No es un enlace de Spotify o YouTube.", "error");
+                // Volver a iniciar el escáner después de un error
+                 setTimeout(startScanner, 1500); 
+            }
+        }
+
+        function onScanFailure(error) {
+            // console.warn(`Scan error: ${error}`); // Puedes descomentar para depurar
+        }
+
+        function startScanner() {
+            if (!html5QrcodeScanner) {
+                 console.error("Scanner not initialized");
+                 displayMessage("Error al inicializar el escáner.", "error");
+                 return;
+             }
+            if (!isScannerRunning) {
+                // Configuración para el escáner
+                const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+                // Iniciar escaneo usando la cámara trasera
+                html5QrcodeScanner.start(
+                    { facingMode: "environment" }, 
+                    config,
+                    onScanSuccess,
+                    onScanFailure
+                ).then(() => {
+                    isScannerRunning = true;
+                    console.log("Scanner started.");
+                    // Opcional: limpiar mensaje si se inicia bien
+                     // displayMessage(''); 
+                }).catch(err => {
+                    console.error("Error starting scanner:", err);
+                    displayMessage("No se pudo iniciar la cámara. Revisa los permisos.", "error");
+                    isScannerRunning = false; // Asegurarse de que el estado es correcto
+                });
+            }
+        }
+
+        function stopScanner() {
+            if (html5QrcodeScanner && isScannerRunning) {
+                html5QrcodeScanner.stop()
+                .then(() => {
+                    isScannerRunning = false;
+                    console.log("Scanner stopped.");
+                    // Limpiar el contenido del div 'reader' puede ayudar a liberar recursos
+                    readerElement.innerHTML = ""; 
+                     // Asegurar que el objeto se reinicialice la próxima vez si es necesario
+                    // html5QrcodeScanner.clear(); // Opcional, usar si hay problemas persistentes
+                    // Re-inicializar para el próximo escaneo
+                    html5QrcodeScanner = new Html5Qrcode(qrCodeRegionId);
+                })
+                .catch(err => {
+                    console.error("Error stopping scanner:", err);
+                    // Incluso si hay error al detener, forzar el estado
+                    isScannerRunning = false; 
+                });
+            } else if (html5QrcodeScanner && !isScannerRunning) {
+                 // Si ya está detenido, asegurarse de limpiar el estado visual si es necesario
+                 readerElement.innerHTML = ""; 
+                 html5QrcodeScanner = new Html5Qrcode(qrCodeRegionId); // Re-inicializar por si acaso
+            }
+        }
+        
+        // --- Lógica para Cargar URL desde Input ---
+        function loadFromInput() {
+            const url = urlInput.value.trim();
+             if (!url) {
+                displayMessage("Pega una URL válida en el campo.", "error");
+                return;
+            }
+             const parsed = parseService(url);
+             if (parsed.service && parsed.id) {
+                current = { ...parsed, iframe: null, concealed: true }; // Guardar datos
+                let serviceName = (parsed.service === 'youtube' || parsed.service === 'youtubemusic') ? 'YouTube' : 'Spotify';
+                displayMessage(`URL de ${serviceName} cargada!`, parsed.service === 'youtube' ? 'youtube' : 'success');
+                switchView('game'); // Cambiar a la vista del juego
+            } else {
+                 displayMessage("La URL no parece ser de Spotify o YouTube.", "error");
+             }
+        }
+
+        // --- Lógica del Juego ---
+
+        // Función parseService (robusta, de Copilot)
+        function parseService(url) {
+            try {
+                const u = new URL(url);
+                const host = u.hostname.replace(/^www\./,'').toLowerCase();
+
+                // YT & YT Music
+                if (host.includes('youtube.com') || host === 'youtu.be' || host.includes('music.youtube.com')) {
+                    let videoId = null;
+                    if (host === 'youtu.be') { videoId = u.pathname.slice(1); } 
+                    else { videoId = u.searchParams.get('v'); }
+                    // Extraer ID de shorts si no se encontró 'v'
+                    if (!videoId && u.pathname.startsWith('/shorts/')) {
+                        videoId = u.pathname.split('/')[2] || null;
+                    }
+                     // Extraer ID de embed si no se encontró antes
+                    if (!videoId && u.pathname.startsWith('/embed/')) {
+                         videoId = u.pathname.split('/')[2] || null;
+                    }
+
+                    if (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId)) { // Validar formato ID
+                       return { service: host.includes('music.youtube.com') ? 'youtubemusic' : 'youtube', id: videoId };
+                    }
+                }
+
+                // Spotify (tracks y embed)
+                if (host.includes('spotify.com')) {
+                    const parts = u.pathname.split('/').filter(Boolean); // ['track','ID'] o ['embed', 'track', 'ID']
+                    let type = null;
+                    let id = null;
+                    if (parts.length === 2 && parts[0] === 'track') {
+                         type = 'track';
+                         id = parts[1];
+                    } else if (parts.length === 3 && parts[0] === 'embed' && parts[1] === 'track') {
+                         type = 'track'; // Lo tratamos igual
+                         id = parts[2];
+                    }
+                    
+                    if (type === 'track' && id && /^[a-zA-Z0-9]+$/.test(id)) {
+                        return { service: 'spotify', id: id, kind: 'track' };
+                    }
+                }
+                 // Spotify (tu formato especial, ahora valida http/https)
+                const customSpotifyMatch = url.match(/(http(s)?:\/\/open\.spotify\.com\/.*)/);
+                 if(customSpotifyMatch && customSpotifyMatch[1]){
+                     // Aquí podríamos intentar extraer el ID si sigue un patrón, o simplemente usar la URL
+                      // Por ahora, asumimos que la URL completa es lo que necesitamos si es este formato
+                      // Necesitaríamos saber qué formato exacto genera tu script Python para ser más precisos
+                      // Si tu script genera 'https://open.spotify.com/embed/$ID', necesitamos un REGEX específico para eso
+                      
+                      // Intento de REGEX para tu formato específico:
+                      const specificFormatMatch = url.match(/http(s)?:\/\/open\.spotify\.com\/(embed\/track|track)\/([a-zA-Z0-9]+)/);
+                       if (specificFormatMatch && specificFormatMatch[3]) {
+                            return { service: 'spotify', id: specificFormatMatch[3], kind: 'track' };
+                       } else {
+                            // Si no coincide con track/embed estándar, devolvemos null por ahora
+                            // return { service: 'spotify-custom-embed', id: url, kind: null }; // Descomentar si quieres usar la URL completa
+                             return { service: null, id: null }; // Más seguro si no estamos seguros del formato
+                       }
+                 }
+
+
+                return { service: null, id: null };
+            } catch(e) {
+                console.error("Error parsing URL:", e);
+                return { service: null, id: null };
+            }
+        }
+
+
+        // Construye iframe embebido (adaptado)
+        function buildEmbed({ service, id, kind }) {
+            let src = '';
+            let title = 'Reproductor';
+            let allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture; web-share';
+
+            if (service === 'youtube' || service === 'youtubemusic') {
+                const params = new URLSearchParams({
+                    autoplay: '1', // Autoplay activado
+                    controls: '0', // Sin controles visibles (el truco los oculta igual)
+                    modestbranding: '1',
+                    rel: '0',
+                    playsinline: '1',
+                    enablejsapi: '1' // Habilitar API JS para control (play/mute)
+                });
+                // Intentar añadir origin si estamos en http/https
+                try {
+                    if (location.origin && location.origin.startsWith('http')) params.set('origin', location.origin);
+                } catch {}
+                
+                src = `https://www.youtube.com/embed/${id}?${params.toString()}`;
+                title = 'YouTube Player';
+            } 
+            else if (service === 'spotify') {
+                // Usamos el formato embed estándar que SÍ soporta autoplay mejor
+                src = `https://open.spotify.com/embed/$track/${id}?utm_source=generator&theme=0`; // theme=0 es el oscuro
+                title = 'Spotify Player';
+                 allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture'; // Allow específico de Spotify embed
+            }
+             else if (service === 'spotify-custom-embed') {
+                 // Si decidimos usar la URL completa para formatos desconocidos
+                 src = id + '?utm_source=generator&theme=0'; // Añadir parámetros necesarios
+                 title = 'Spotify Player';
+                 allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+             }
+
+            if (!src) return null;
+
+            const iframe = document.createElement('iframe');
+            iframe.src = src;
+            iframe.title = title;
+            iframe.loading = 'lazy';
+            iframe.allow = allow;
+            iframe.allowFullscreen = true; // Para YouTube principalmente
+             iframe.style.borderRadius = '12px'; // Redondeo para Spotify
+            return iframe;
+        }
+
+        // Inicia la reproducción
+        function playSong() {
+            if (!current.service || !current.id) {
+                displayMessage("No hay pista cargada.", "error");
+                return;
+            }
+
+            // Crear y añadir el iframe AHORA, al pulsar Play
+            const iframe = buildEmbed(current);
+            if (!iframe) {
+                displayMessage("Error al crear el reproductor.", "error");
+                return;
+            }
+            
+            iframeWrapper.innerHTML = ''; // Limpiar por si acaso
+            iframeWrapper.appendChild(iframe);
+            current.iframe = iframe; // Guardar referencia al iframe creado
+
+            // Actualizar UI: Ocultar botón Play, mostrar Revelar, cambiar texto
+            playButton.classList.add('hidden');
+            revealButton.classList.remove('hidden');
+            coverText.innerHTML = "Pista Sonando...";
+            displayMessage('Reproduciendo...', 'info'); // Mensaje informativo fijo
+
+            // Lógica específica post-creación del iframe
+             if (current.service === 'youtube' || current.service === 'youtubemusic') {
+                 // No necesitamos enviar 'playVideo' si autoplay=1 está en la URL
+                 // Pero podemos intentar silenciar y luego quitar silencio para forzar inicio en algunos móviles
+                /* setTimeout(() => {
+                    const muteMsg = JSON.stringify({ event:'command', func:'mute', args:[] });
+                    current.iframe.contentWindow?.postMessage(muteMsg, '*');
+                     setTimeout(() => {
+                        const unmuteMsg = JSON.stringify({ event:'command', func:'unMute', args:[] });
+                        current.iframe.contentWindow?.postMessage(unmuteMsg, '*');
+                     }, 500); // Esperar un poco antes de quitar silencio
+                 }, 1000); // Esperar a que el iframe cargue un poco */
+             } else if (current.service === 'spotify' || current.service === 'spotify-custom-embed') {
+                 // Spotify es más restrictivo, enfocar puede ayudar pero no garantiza play
+                  iframe.focus(); 
+             }
+        }
+
+        // Revela el reproductor oculto
+        function revealPlayer() {
+            coverLayer.classList.add('cover-hidden'); // Oculta la tapa
+            revealButton.textContent = "¡Revelado!";
+            revealButton.disabled = true;
+             displayMessage(''); // Opcional: limpiar mensaje al revelar
+        }
+
+        // --- Inicialización ---
+        window.onload = () => {
+             // Crear instancia del scanner una sola vez
+             try {
+                 html5QrcodeScanner = new Html5Qrcode(qrCodeRegionId);
+                 switchView('scanner'); // Mostrar vista inicial
+             } catch (e) {
+                  console.error("Failed to initialize html5QrcodeScanner:", e);
+                  displayMessage("Error grave: No se pudo inicializar el lector QR.", "error");
+                  // Deshabilitar funcionalidad de escaneo si falla la inicialización
+                  const scanButton = $('#btnScan'); // Asumiendo que tienes un botón para iniciar escaneo manual
+                  if(scanButton) scanButton.disabled = true;
+                  scannerView.innerHTML = "<p class='text-red-500 text-center'>El escáner QR no está disponible en este dispositivo/navegador.</p>";
+             }
+        };
+        
+        // Opcional: para que funcione el ?u=URL
+        /*(function initFromQuery(){
+            const params = new URLSearchParams(location.search);
+            const u = params.get('u');
+            if (u) {
+                 const parsed = parseService(u);
+                 if (parsed.service && parsed.id) {
+                    current = { ...parsed, iframe: null, concealed: true };
+                    switchView('game');
+                    displayMessage('Pista cargada desde URL. Presiona Tocar Música.', parsed.service === 'youtube' ? 'youtube' : 'success');
+                 } else {
+                      displayMessage('La URL en el enlace no es válida.', 'error');
+                 }
+            }
+        })();*/
+        
+    </script>
 </body>
 </html>
