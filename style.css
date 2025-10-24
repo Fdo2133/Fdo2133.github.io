@@ -7,6 +7,104 @@ body {
     background-color: #121212; 
 }
 
+/* 2. El estilo base del título de neón */
+.neon-titulo {
+    /* Estado inicial (comienza en Rojo) */
+    text-shadow: 
+        0 0 5px currentColor,
+        0 0 10px currentColor,
+        0 0 20px #ff0000,  /* Rojo */
+        0 0 40px #ff0000,  /* Rojo */
+        0 0 60px #ff0000;  /* Rojo */
+    
+    /* * Usamos la nueva animación "parpadeoMulticolor".
+     * Durará 4.5s en total (1.5s por cada color).
+     * Ya no usamos "alternate" porque queremos que 
+     * el ciclo vaya siempre hacia adelante (R -> G -> B -> R...).
+     */
+    animation: parpadeoMulticolor 4.5s infinite ease-in-out;
+}
+
+/* * 3. Nueva animación de parpadeo multicolor
+ *
+ * Definimos 6 pasos:
+ * - 3 estados "Encendidos" (con brillo de color)
+ * - 3 estados "Atenuados" (para el efecto de parpadeo)
+ */
+@keyframes parpadeoMulticolor {
+    
+    /* --- CICLO ROJO --- */
+    /* 0%: Encendido (Rojo) */
+    0% {
+        text-shadow: 
+            0 0 5px currentColor,
+            0 0 10px currentColor,
+            0 0 20px #ff0000, /* Rojo */
+            0 0 40px #ff0000,
+            0 0 60px #ff0000;
+        opacity: 1;
+    }
+    /* 16.6%: Apagado/Atenuado */
+    16.6% {
+        text-shadow: 
+            0 0 2px currentColor,
+            0 0 4px currentColor,
+            0 0 5px #ff0000; /* Eco de Rojo */
+        opacity: 0.8;
+    }
+
+    /* --- CICLO VERDE --- */
+    /* 33.3%: Encendido (Verde) */
+    33.3% {
+        text-shadow: 
+            0 0 5px currentColor,
+            0 0 10px currentColor,
+            0 0 20px #00ff00, /* Verde */
+            0 0 40px #00ff00,
+            0 0 60px #00ff00;
+        opacity: 1;
+    }
+    /* 50%: Apagado/Atenuado */
+    50% {
+        text-shadow: 
+            0 0 2px currentColor,
+            0 0 4px currentColor,
+            0 0 5px #00ff00; /* Eco de Verde */
+        opacity: 0.8;
+    }
+
+    /* --- CICLO AZUL --- */
+    /* 66.6%: Encendido (Azul) */
+    66.6% {
+        text-shadow: 
+            0 0 5px currentColor,
+            0 0 10px currentColor,
+            0 0 20px #0077ff, /* Azul (un azul neón bonito) */
+            0 0 40px #0077ff,
+            0 0 60px #0077ff;
+        opacity: 1;
+    }
+    /* 83.3%: Apagado/Atenuado */
+    83.3% {
+        text-shadow: 
+            0 0 2px currentColor,
+            0 0 4px currentColor,
+            0 0 5px #0077ff; /* Eco de Azul */
+        opacity: 0.8;
+    }
+
+    /* 100%: Vuelve al inicio (Rojo) para un ciclo perfecto */
+    100% {
+        text-shadow: 
+            0 0 5px currentColor,
+            0 0 10px currentColor,
+            0 0 20px #ff0000, /* Rojo */
+            0 0 40px #ff0000,
+            0 0 60px #ff0000;
+        opacity: 1;
+    }
+}
+
 /* Contenedor del Reproductor (TAMAÑO NORMAL) */
 #player-container { 
     position: relative; 
