@@ -1,409 +1,401 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hitster LITE (v11 - Definitivo)</title>
-  <meta name="theme-color" content="#111827" />
-  <style>
-    :root{
-      --bg:#0f172a;        /* slate-900 */
-      --card:#111827;      /* gray-900 */
-      --muted:#94a3b8;     /* slate-400 */
-      --text:#e5e7eb;      /* gray-200 */
-      --accent:#22c55e;    /* green-500 */
-      --accent-2:#10b981;  /* emerald-500 */
-      --danger:#ef4444;    /* red-500 */
-      --warning:#f59e0b;   /* amber-500 */
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-      background: radial-gradient(1200px 800px at 20% 0%, #111827 0%, #0b1220 40%, #05070d 100%), var(--bg);
-      color:var(--text);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:24px;
-    }
-    .app{
-      width:min(960px, 100%);
-      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01));
-      border:1px solid rgba(255,255,255,0.08);
-      border-radius:20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
-      padding:20px;
-    }
-    header{
-      display:flex; align-items:center; gap:12px; margin-bottom:12px;
-    }
-    .badge{
-      font-size:12px; color:#0b1a10; background:linear-gradient(90deg, var(--accent), var(--accent-2));
-      padding:4px 10px; border-radius:999px; font-weight:700; letter-spacing:.4px;
-    }
-    h1{font-size:28px; margin:6px 0 0}
-    .sub{color:var(--muted); margin:0 0 16px; line-height:1.4}
-    .grid{
-      display:grid; gap:16px;
-      grid-template-columns: 1fr;
-    }
-    @media (min-width: 880px){
-      .grid{ grid-template-columns: 1.1fr .9fr; }
-    }
-    .panel{
-      background:rgba(17,24,39,.6);
-      border:1px solid rgba(148,163,184,.2);
-      border-radius:16px; padding:16px;
-    }
-    .panel h2{ margin:0 0 8px; font-size:16px; color:#cbd5e1; letter-spacing:.2px }
-    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
-    input[type="url"]{
-      flex:1; min-width:240px;
-      background:#0b1220; color:var(--text);
-      border:1px solid rgba(148,163,184,.25);
-      padding:12px 14px; border-radius:12px; outline:none;
-    }
-    input[type="url"]::placeholder{ color:#64748b }
-    .btn{
-      appearance:none; border:0; cursor:pointer; user-select:none;
-      padding:12px 16px; border-radius:12px; font-weight:700; letter-spacing:.3px;
-      color:#08140c; background:linear-gradient(180deg, var(--accent), var(--accent-2));
-      box-shadow: 0 6px 18px rgba(16,185,129,.35);
-      display:inline-flex; gap:8px; align-items:center; justify-content:center;
-      transition:transform .05s ease, filter .15s ease;
-    }
-    .btn:hover{ filter:brightness(1.05) }
-    .btn:active{ transform:translateY(1px) }
-    .btn.secondary{
-      color:#cbd5e1; background:#0b1220; border:1px solid rgba(148,163,184,.35);
-      box-shadow:none;
-    }
-    .btn.warn{ background:linear-gradient(180deg, var(--warning), #d97706); color:#0b0b0b }
-    .btn.danger{ background:linear-gradient(180deg, var(--danger), #b91c1c); color:#fff }
-    .pill{ font-size:12px; color:var(--muted) }
-    .playerBox{
-      position:relative; aspect-ratio:16/9; width:100%; overflow:hidden; border-radius:14px; background:#000;
-      border:1px solid rgba(148,163,184,.25);
-    }
-    iframe, audio{ width:100%; height:100%; display:block; background:#000; border:0 }
-    .overlay{
-      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-      background:linear-gradient(0deg, rgba(0,0,0,.55), rgba(0,0,0,.35));
-      pointer-events:none; opacity:0; transition:opacity .2s ease;
-    }
-    .overlay.show{ opacity:1; pointer-events:auto }
-    .cta{
-      pointer-events:auto;
-      display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center;
-      background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.2);
-      padding:16px 18px; border-radius:14px; backdrop-filter: blur(6px);
-      max-width:min(92%, 520px)
-    }
-    .cta h3{ margin:0; font-size:18px }
-    .note{ font-size:12px; color:#cbd5e1 }
-    .sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap }
-    .flex-gap{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
-    footer{ margin-top:16px; color:var(--muted); font-size:12px; text-align:center }
-    code.inline{ background:#0b1220; border:1px solid rgba(148,163,184,.25); padding:2px 6px; border-radius:6px }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Hitster LITE v12</title>
+<meta name="theme-color" content="#0f172a" />
+<style>
+  :root{
+    --bg:#0f172a; --panel:#111827; --muted:#94a3b8; --text:#e5e7eb;
+    --accent:#22c55e; --accent2:#10b981; --danger:#ef4444; --warn:#f59e0b;
+    --border:rgba(148,163,184,.25);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:#0b1220; color:var(--text);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans";
+    display:flex; align-items:center; justify-content:center; padding:16px;
+  }
+  .app{ width:min(900px,100%); background:var(--panel); border:1px solid var(--border);
+        border-radius:14px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  header{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px}
+  h1{font-size:20px; margin:0}
+  .sub{color:var(--muted); margin:4px 0 0}
+  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  .panel{background:#0b1220; border:1px solid var(--border); border-radius:12px; padding:12px}
+  input[type="url"], input[type="file"]{
+    flex:1; min-width:220px; background:#0b1220; color:var(--text);
+    border:1px solid var(--border); padding:10px 12px; border-radius:10px; outline:none;
+  }
+  .btn{
+    appearance:none; border:0; cursor:pointer; user-select:none;
+    padding:10px 14px; border-radius:10px; font-weight:700; letter-spacing:.2px;
+    color:#08140c; background:linear-gradient(180deg,var(--accent),var(--accent2));
+  }
+  .btn.secondary{ background:#0b1220; color:#cbd5e1; border:1px solid var(--border) }
+  .btn.warn{ background:linear-gradient(180deg,var(--warn),#d97706); color:#101010 }
+  .btn.danger{ background:linear-gradient(180deg,var(--danger),#b91c1c); color:#fff }
+  .pill{ font-size:12px; color:var(--muted) }
+  .grid{ display:grid; gap:12px; grid-template-columns: 1fr; }
+  @media(min-width:880px){ .grid{ grid-template-columns: 1.1fr .9fr } }
+  .playerBox{ position:relative; aspect-ratio:16/9; width:100%; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#000 }
+  iframe,audio{ width:100%; height:100%; border:0; display:block; background:#000 }
+  /* Overlay inicial con botones */
+  .overlay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+            background:rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:opacity .2s ease }
+  .overlay.show{ opacity:1; pointer-events:auto }
+  .cta{ background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.2);
+        padding:14px; border-radius:12px; text-align:center; max-width:min(95%,520px)}
+  /* Cover para ocultar video/caratula mientras suena */
+  .cover{ position:absolute; inset:0; background:#0b1220; display:none; align-items:center; justify-content:center;
+          border-top:1px solid rgba(255,255,255,.03); border-bottom:1px solid rgba(255,255,255,.03) }
+  .cover.show{ display:flex }
+  .cover .msg{ color:#cbd5e1; text-align:center; }
+  .status{ margin-top:8px; color:var(--muted); font-size:12px }
+  /* Scanner */
+  .scanner{ display:none; margin-top:8px; }
+  .scanner.show{ display:block }
+  video#qrVideo{ width:100%; border-radius:10px; border:1px solid var(--border); background:#000 }
+</style>
 </head>
 <body>
-  <div class="app" role="application" aria-label="Hitster LITE">
-    <header>
-      <span class="badge" aria-hidden="true">HITSTER LITE v11</span>
-      <h1>Escanea la Tarjeta Musical y ¡a jugar!</h1>
-    </header>
-    <p class="sub">
-      Escanea el QR para cargar la canción (Spotify, YouTube o YouTube Music), luego presiona <strong>Tocar Música</strong>.
-    </p>
+<div class="app" role="application" aria-label="Hitster LITE v12">
+  <header>
+    <h1>Hitster LITE</h1>
+    <p class="sub">Escanea el QR o pega el enlace. Luego pulsa <strong>Tocar música</strong>.</p>
+  </header>
 
-    <div class="grid">
-      <!-- Columna: Reproductor -->
-      <section class="panel" aria-labelledby="sec-player">
-        <h2 id="sec-player">Reproductor</h2>
-        <div id="playerBox" class="playerBox" aria-live="polite">
-          <!-- Aquí se inyecta el iframe o audio dinámicamente -->
-          <div id="overlay" class="overlay show" aria-hidden="false">
-            <div class="cta">
-              <h3>♫ ¡Escaneo exitoso!</h3>
-              <p class="note">Presiona el botón para iniciar la reproducción (requisito del navegador).</p>
-              <div class="flex-gap">
-                <button id="btnPlay" class="btn" type="button" aria-label="Tocar Música">▶️ Tocar Música</button>
-                <button id="btnReveal" class="btn secondary" type="button" aria-label="Revelar título y artista">🔎 Revelar Título y Artista</button>
-              </div>
-              <div class="flex-gap">
-                <button id="btnScanNew" class="btn secondary" type="button">📷 Escanear Nueva Tarjeta</button>
-                <button id="btnMute" class="btn warn" type="button" aria-pressed="false">🔇 Silencio</button>
-              </div>
-              <p class="pill">Sugerencia: si no se escucha, pulsa <strong>Silencio</strong> para alternar mute.</p>
+  <div class="grid">
+    <!-- Reproductor -->
+    <section class="panel" aria-labelledby="sec-player">
+      <h2 id="sec-player" style="margin:0 0 8px; font-size:14px; color:#cbd5e1">Reproductor</h2>
+      <div id="playerBox" class="playerBox">
+        <div id="overlay" class="overlay show" aria-hidden="false">
+          <div class="cta">
+            <p style="margin:0 0 8px">♫ Escanea o pega la URL. Cuando estés listo…</p>
+            <div class="row" style="justify-content:center">
+              <button id="btnPlay" class="btn" type="button">▶️ Tocar música</button>
+              <button id="btnReveal" class="btn secondary" type="button">🔎 Revelar</button>
+              <button id="btnMute" class="btn secondary" type="button">🔇 Silencio</button>
             </div>
+            <p class="pill" style="margin-top:8px">El audio no iniciará sin tu toque (política del navegador).</p>
           </div>
         </div>
-        <div class="row" style="margin-top:10px">
-          <span class="pill">Estado: <span id="status" aria-live="polite">esperando URL…</span></span>
+        <!-- Cover para ocultar el contenido visual mientras suena -->
+        <div id="cover" class="cover">
+          <div class="msg">
+            <div style="font-weight:700;">Reproduciendo en modo oculto</div>
+            <div class="pill">Pulsa “Revelar” si quieres ver el video/caratula.</div>
+          </div>
         </div>
-      </section>
+        <!-- Iframe/audio se inyecta dinámicamente -->
+      </div>
+      <div class="status">Estado: <span id="status">esperando URL…</span></div>
+    </section>
 
-      <!-- Columna: Entrada / Controles -->
-      <section class="panel" aria-labelledby="sec-input">
-        <h2 id="sec-input">Escanea o pega la URL</h2>
-        <div class="row">
-          <input id="urlInput" type="url" inputmode="url" placeholder="Pega aquí el enlace de YouTube, YouTube Music o Spotify…"
-                 aria-label="URL de la canción" />
-          <button id="btnLoad" class="btn" type="button">Cargar</button>
-        </div>
-        <div style="margin-top:10px" class="row">
-          <button id="btnCopyReveal" class="btn secondary" type="button">Copiar Título/Artista</button>
-          <span class="pill">Tip: el QR debería abrir la app como <code class="inline">…/index.html?u=URL</code></span>
-        </div>
+    <!-- Entrada + QR -->
+    <section class="panel" aria-labelledby="sec-input">
+      <h2 id="sec-input" style="margin:0 0 8px; font-size:14px; color:#cbd5e1">Entrada</h2>
+      <div class="row">
+        <input id="urlInput" type="url" inputmode="url" placeholder="Pega enlace de YouTube / YouTube Music / Spotify…" aria-label="URL de la canción" />
+        <button id="btnLoad" class="btn" type="button">Cargar</button>
+      </div>
 
-        <div style="margin-top:12px">
-          <h2 style="margin:0 0 6px; font-size:14px; color:#cbd5e1">¡Es Hora de Jugar!</h2>
-          <ul style="margin:0 0 0 18px; padding:0; line-height:1.5; color:#cbd5e1">
-            <li>Soporta Spotify, YouTube y YouTube Music.</li>
-            <li>Botón <em>Tocar Música</em> siempre visible para cumplir políticas de reproducción.</li>
-            <li>Funciona en móvil y escritorio. Si el audio no inicia, pulsa el botón nuevamente.</li>
-          </ul>
-        </div>
-      </section>
-    </div>
+      <div class="row" style="margin-top:8px">
+        <button id="btnScan" class="btn secondary" type="button">📷 Escanear QR</button>
+        <input id="fileInput" type="file" accept="image/*" style="display:none" />
+        <button id="btnStopScan" class="btn secondary" type="button">⏹️ Detener</button>
+        <span class="pill">Tip: también puedes abrir <code>?u=URL</code> desde el QR.</span>
+      </div>
 
-    <footer>
-      Hecho por Jose Fernando · Modo LITE · No afiliado a Spotify / YouTube — Solo uso de iframes embebidos.
-    </footer>
+      <!-- Bloque del escáner -->
+      <div id="scanner" class="scanner">
+        <video id="qrVideo" playsinline muted></video>
+        <div class="row" style="margin-top:6px">
+          <span class="pill" id="scanStatus">Preparando cámara…</span>
+        </div>
+      </div>
+    </section>
   </div>
+</div>
 
-  <script>
-    // Utilidades
-    const $ = sel => document.querySelector(sel);
-    const statusEl = $('#status');
-    const playerBox = $('#playerBox');
-    const overlay = $('#overlay');
-    const urlInput = $('#urlInput');
-    const btnLoad = $('#btnLoad');
-    const btnPlay = $('#btnPlay');
-    const btnReveal = $('#btnReveal');
-    const btnScanNew = $('#btnScanNew');
-    const btnMute = $('#btnMute');
-    const btnCopyReveal = $('#btnCopyReveal');
+<script>
+  // ======= Utilidades / Estado =======
+  const $ = s => document.querySelector(s);
+  const statusEl = $('#status');
+  const playerBox = $('#playerBox');
+  const overlay = $('#overlay');
+  const cover = $('#cover');
+  const urlInput = $('#urlInput');
+  const btnLoad = $('#btnLoad');
+  const btnPlay = $('#btnPlay');
+  const btnReveal = $('#btnReveal');
+  const btnMute = $('#btnMute');
+  const btnScan = $('#btnScan');
+  const btnStopScan = $('#btnStopScan');
+  const fileInput = $('#fileInput');
+  const scannerWrap = $('#scanner');
+  const qrVideo = $('#qrVideo');
+  const scanStatus = $('#scanStatus');
 
-    let current = {
-      service: null,       // 'youtube' | 'spotify' | 'youtubemusic' | null
-      id: null,            // videoId | trackId | etc.
-      title: null,
-      artist: null,
-      muted: false,
-      ready: false,
-      iframe: null
-    };
+  let current = {
+    service: null, id: null, kind: null,
+    muted: false, ready: false, iframe: null,
+    concealed: true
+  };
 
-    function setStatus(msg){ statusEl.textContent = msg; }
+  let scanStream = null;
+  let scanLoop = null;
+  let barcodeDetector = null;
 
-    // Detecta servicio e ID a partir de una URL
-    function parseService(url) {
-      try {
-        const u = new URL(url);
-        const host = u.hostname.replace(/^www\./,'').toLowerCase();
+  const setStatus = (t) => statusEl.textContent = t;
 
-        // YT & YT Music
-        if (host.includes('youtube.com') || host.includes('youtu.be') || host.includes('music.youtube.com')) {
-          let videoId = null;
-          if (host === 'youtu.be') {
-            videoId = u.pathname.slice(1);
-          } else {
-            videoId = u.searchParams.get('v');
-            if (!videoId && u.pathname.startsWith('/shorts/')) {
-              videoId = u.pathname.split('/')[2] || null;
-            }
-          }
-          if (videoId) {
-            return { service: host.includes('music.youtube.com') ? 'youtubemusic' : 'youtube', id: videoId };
-          }
-        }
+  // ======= Detección de servicio =======
+  function parseService(url) {
+    try {
+      const u = new URL(url);
+      const host = u.hostname.replace(/^www\./,'').toLowerCase();
 
-        // Spotify (tracks y playlists básicos)
-        if (host.includes('spotify.com')) {
-          const parts = u.pathname.split('/').filter(Boolean); // ['track','ID'] o ['playlist','ID']
-          const type = parts[0];
-          const id = parts[1];
-          if ((type === 'track' || type === 'playlist') && id) {
-            return { service: 'spotify', id, kind: type };
+      if (host.includes('youtube.com') || host === 'youtu.be' || host.includes('music.youtube.com')) {
+        let videoId = null;
+        if (host === 'youtu.be') {
+          videoId = u.pathname.slice(1);
+        } else {
+          videoId = u.searchParams.get('v');
+          if (!videoId && u.pathname.startsWith('/shorts/')) {
+            videoId = u.pathname.split('/')[2] || null;
           }
         }
-
-        return { service: null, id: null };
-      } catch(e) {
-        return { service: null, id: null };
-      }
-    }
-
-    // Construye iframe embebido
-    function buildEmbed({ service, id, kind }) {
-      let src = '';
-      let title = 'Reproductor';
-      let allow = 'autoplay; encrypted-media; clipboard-write; picture-in-picture; web-share';
-      let extra = '';
-
-      if (service === 'youtube' || service === 'youtubemusic') {
-        // YouTube embed con controles mínimos; mute configurable luego
-        const params = new URLSearchParams({
-          autoplay: '0',
-          controls: '1',
-          modestbranding: '1',
-          rel: '0',
-          playsinline: '1'
-        });
-        src = `https://www.youtube.com/embed/${id}?${params.toString()}`;
-        title = 'YouTube Player';
-        extra = 'referrerpolicy="strict-origin-when-cross-origin"';
-      }
-      else if (service === 'spotify') {
-        // Para track y playlist
-        const path = kind === 'playlist' ? 'playlist' : 'track';
-        src = `https://open.spotify.com/embed/${path}/${id}?utm_source=generator&theme=0`;
-        title = 'Spotify Player';
-        // Nota: Spotify no permite autoplay programático; el botón es esencial.
+        if (videoId) {
+          return { service: host.includes('music.youtube.com') ? 'youtubemusic' : 'youtube', id: videoId };
+        }
       }
 
-      if (!src) return null;
-
-      const iframe = document.createElement('iframe');
-      iframe.setAttribute('src', src);
-      iframe.setAttribute('title', title);
-      iframe.setAttribute('loading', 'lazy');
-      iframe.setAttribute('allow', allow);
-      iframe.setAttribute('allowfullscreen', '');
-      if (extra) iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
-
-      return iframe;
-    }
-
-    // Carga el reproductor
-    function loadPlayerFrom(url) {
-      const { service, id, kind } = parseService(url);
-      current.service = service;
-      current.id = id;
-      current.title = null;
-      current.artist = null;
-      current.ready = false;
-
-      // Limpia el contenedor
-      playerBox.querySelectorAll('iframe, audio').forEach(n => n.remove());
-
-      if (!service || !id) {
-        setStatus('URL inválida o no soportada.');
-        overlay.classList.add('show');
-        return;
+      if (host.includes('spotify.com')) {
+        const parts = u.pathname.split('/').filter(Boolean);
+        const type = parts[0]; const id = parts[1];
+        if ((type === 'track' || type === 'playlist') && id) {
+          return { service:'spotify', id, kind:type };
+        }
       }
+      return { service:null, id:null };
+    } catch { return { service:null, id:null } }
+  }
 
-      const iframe = buildEmbed({ service, id, kind });
-      if (!iframe) {
-        setStatus('No se pudo crear el reproductor.');
-        overlay.classList.add('show');
-        return;
-      }
+  // ======= Construcción del embed =======
+  function buildEmbed({ service, id, kind }) {
+    let src = '', title = 'Reproductor', allow = 'autoplay; encrypted-media; clipboard-write; picture-in-picture; web-share';
 
-      current.iframe = iframe;
-      playerBox.prepend(iframe);
-
-      // Cuando el iframe carga, habilitamos el Play
-      iframe.addEventListener('load', () => {
-        current.ready = true;
-        overlay.classList.add('show'); // Mantenemos overlay hasta que el usuario pulse Play
-        setStatus(`Listo: ${service.toUpperCase()} (${id})`);
+    if (service === 'youtube' || service === 'youtubemusic') {
+      const params = new URLSearchParams({
+        autoplay: '0', controls: '1', modestbranding:'1', rel:'0', playsinline:'1', enablejsapi:'1'
       });
-
-      // Guardamos la URL en el input
-      urlInput.value = url;
-    }
-
-    // Intenta reproducir (las políticas requieren gesto del usuario)
-    async function playCurrent(){
-      if (!current.iframe) return;
+      // origin ayuda a la IFrame API; no sirve en file://
       try {
-        // Estrategia:
-        //  - Para YouTube: enviamos postMessage para 'playVideo' (API ligera), y como alternativa focusear.
-        //  - Para Spotify: enfocamos iframe; el usuario quizá deba pulsar Play dentro del embed (limitación de Spotify).
-        overlay.classList.remove('show');
-        setStatus('Intentando reproducir…');
-
-        if (current.service === 'youtube' || current.service === 'youtubemusic') {
-          // Usamos la IFrame Player API vía postMessage sin cargar librería completa.
-          const msg = JSON.stringify({ event:'command', func:'playVideo', args:[] });
-          current.iframe.contentWindow.postMessage(msg, '*');
-          setStatus('Reproduciendo en YouTube…');
-        } else if (current.service === 'spotify') {
-          // Limitación: Spotify requiere interacción adicional dentro del iframe para iniciar en la mayoría de navegadores.
-          current.iframe.focus();
-          setStatus('Spotify listo. Si no inicia, pulsa el ▶ dentro del reproductor.');
-        }
-      } catch(e) {
-        overlay.classList.add('show');
-        setStatus('No se pudo iniciar. Vuelve a pulsar Tocar Música.');
-      }
+        if (location.origin && location.origin.startsWith('http')) params.set('origin', location.origin);
+      } catch {}
+      src = `https://www.youtube.com/embed/${id}?${params.toString()}`;
+      title = 'YouTube Player';
+    } else if (service === 'spotify') {
+      const path = (kind === 'playlist') ? 'playlist' : 'track';
+      src = `https://open.spotify.com/embed/${path}/${id}?utm_source=generator&theme=0`;
+      title = 'Spotify Player';
     }
 
-    function toggleMute(){
-      current.muted = !current.muted;
-      // Para YouTube podemos usar postMessage 'mute' / 'unMute'
-      if (current.iframe && (current.service === 'youtube' || current.service === 'youtubemusic')) {
-        const cmd = current.muted ? 'mute' : 'unMute';
-        const msg = JSON.stringify({ event:'command', func:cmd, args:[] });
-        current.iframe.contentWindow.postMessage(msg, '*');
-      }
-      btnMute.textContent = current.muted ? '🔈 Con sonido' : '🔇 Silencio';
-      btnMute.classList.toggle('warn', !current.muted);
-      btnMute.classList.toggle('secondary', current.muted);
-    }
+    if (!src) return null;
 
-    function revealInfo(){
-      // Sin APIs de datos externas, mostraremos solo el servicio + ID.
-      // (Si deseas, luego integramos oEmbed / Data APIs con clave).
-      const info = `Servicio: ${current.service || '—'}  ·  ID: ${current.id || '—'}`;
-      alert(info);
-    }
+    const iframe = document.createElement('iframe');
+    iframe.src = src;
+    iframe.title = title;
+    iframe.loading = 'lazy';
+    iframe.allow = allow;
+    iframe.allowFullscreen = true;
+    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+    return iframe;
+  }
 
-    function copyReveal(){
-      const text = `Servicio: ${current.service || '—'} | ID: ${current.id || '—'}`;
-      navigator.clipboard.writeText(text).then(() => {
-        setStatus('Copiado al portapapeles.');
-      });
-    }
+  function clearPlayer() {
+    playerBox.querySelectorAll('iframe, audio').forEach(n => n.remove());
+    current.iframe = null;
+  }
 
-    function scanNew(){
-      urlInput.value = '';
-      current = { service:null, id:null, title:null, artist:null, muted:false, ready:false, iframe:null };
-      playerBox.querySelectorAll('iframe, audio').forEach(n => n.remove());
+  function loadPlayerFrom(url) {
+    const { service, id, kind } = parseService(url);
+    current.service = service; current.id = id; current.kind = kind || null;
+    current.ready = false; current.muted = false;
+
+    clearPlayer();
+    if (!service || !id) {
+      setStatus('URL inválida o no soportada.');
       overlay.classList.add('show');
-      setStatus('esperando URL…');
-      urlInput.focus();
+      cover.classList.remove('show');
+      return;
     }
 
-    // Eventos UI
-    btnLoad.addEventListener('click', () => {
-      const u = urlInput.value.trim();
-      if (!u) { setStatus('Pega una URL.'); return; }
-      loadPlayerFrom(u);
-    });
-    btnPlay.addEventListener('click', playCurrent);
-    btnReveal.addEventListener('click', revealInfo);
-    btnScanNew.addEventListener('click', scanNew);
-    btnMute.addEventListener('click', toggleMute);
-    btnCopyReveal.addEventListener('click', copyReveal);
+    const iframe = buildEmbed({ service, id, kind });
+    if (!iframe) {
+      setStatus('No se pudo crear el reproductor.');
+      overlay.classList.add('show');
+      cover.classList.remove('show');
+      return;
+    }
 
-    // Si viene ?u= desde el QR, cargamos automáticamente y dejamos el overlay con el botón visible
-    (function initFromQuery(){
-      const params = new URLSearchParams(location.search);
-      const u = params.get('u');
-      if (u) {
-        loadPlayerFrom(u);
-      } else {
-        setStatus('esperando URL…');
-        overlay.classList.add('show'); // Mantenemos el botón visible desde el inicio
+    current.iframe = iframe;
+    playerBox.prepend(iframe);
+
+    iframe.addEventListener('load', () => {
+      current.ready = true;
+      setStatus(`Listo: ${service.toUpperCase()} (${id})`);
+      overlay.classList.add('show'); // mantenemos botón visible hasta tocar
+    });
+
+    urlInput.value = url;
+  }
+
+  // ======= Reproducir / Mute / Revelar =======
+  async function playCurrent(){
+    if (!current.iframe) { setStatus('Primero carga una URL.'); return; }
+    try {
+      overlay.classList.remove('show');
+      setStatus('Intentando reproducir…');
+
+      if (current.service === 'youtube' || current.service === 'youtubemusic') {
+        // Para maximizar el éxito, arranca muteado y luego puedes activar sonido.
+        const muteMsg = JSON.stringify({ event:'command', func:'mute', args:[] });
+        current.iframe.contentWindow.postMessage(muteMsg, '*');
+        const playMsg = JSON.stringify({ event:'command', func:'playVideo', args:[] });
+        current.iframe.contentWindow.postMessage(playMsg, '*');
+        current.muted = true;
+        btnMute.textContent = '🔈 Con sonido';
+        // Modo oculto activo tras Play
+        current.concealed = true;
+        cover.classList.add('show');
+        setStatus('Reproduciendo (YouTube)…');
+      } else if (current.service === 'spotify') {
+        // Spotify normalmente requiere pulsar Play dentro del embed.
+        current.iframe.focus();
+        current.concealed = true;
+        cover.classList.add('show');
+        setStatus('Spotify listo. Si no inicia, pulsa ▶ dentro del reproductor.');
       }
-    })();
-  </script>
+    } catch {
+      overlay.classList.add('show');
+      setStatus('No se pudo iniciar. Vuelve a pulsar Tocar música.');
+    }
+  }
+
+  function toggleMute(){
+    if (!current.iframe) return;
+    current.muted = !current.muted;
+    if (current.service === 'youtube' || current.service === 'youtubemusic') {
+      const cmd = current.muted ? 'mute' : 'unMute';
+      const msg = JSON.stringify({ event:'command', func:cmd, args:[] });
+      current.iframe.contentWindow.postMessage(msg, '*');
+    }
+    btnMute.textContent = current.muted ? '🔈 Con sonido' : '🔇 Silencio';
+  }
+
+  function reveal(){
+    current.concealed = false;
+    cover.classList.remove('show');
+    setStatus('Contenido revelado.');
+  }
+
+  // ======= Escáner QR =======
+  async function startScan(){
+    // Si BarcodeDetector no está, usamos fallback de imagen.
+    const supported = ('BarcodeDetector' in window);
+    if (!supported) {
+      scanStatus.textContent = 'Tu navegador no soporta escaneo en vivo. Sube una imagen con el QR.';
+      fileInput.click();
+      return;
+    }
+
+    try {
+      const formats = await BarcodeDetector.getSupportedFormats();
+      if (!formats.includes('qr_code')) throw new Error('No hay soporte para QR.');
+      barcodeDetector = new BarcodeDetector({ formats:['qr_code'] });
+    } catch {
+      scanStatus.textContent = 'No hay soporte de QR nativo. Sube una imagen con el QR.';
+      fileInput.click();
+      return;
+    }
+
+    // Pedimos cámara
+    try {
+      scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'environment' }, audio:false });
+      qrVideo.srcObject = scanStream;
+      await qrVideo.play();
+
+      scannerWrap.classList.add('show');
+      scanStatus.textContent = 'Escaneando… apunta al código QR.';
+
+      const detect = async () => {
+        if (!barcodeDetector) return;
+        try {
+          const codes = await barcodeDetector.detect(qrVideo);
+          if (codes && codes.length) {
+            const value = (codes[0].rawValue || '').trim();
+            stopScan();
+            if (value) {
+              setStatus('QR detectado. Cargando…');
+              loadPlayerFrom(value);
+            } else {
+              setStatus('QR vacío.');
+            }
+            return; // salimos del bucle
+          }
+        } catch {}
+        scanLoop = requestAnimationFrame(detect);
+      };
+      scanLoop = requestAnimationFrame(detect);
+    } catch (e) {
+      scannerWrap.classList.remove('show');
+      setStatus('No se pudo acceder a la cámara. Revisa permisos del navegador.');
+    }
+  }
+
+  function stopScan(){
+    if (scanLoop) cancelAnimationFrame(scanLoop), scanLoop = null;
+    if (qrVideo) { qrVideo.pause(); qrVideo.srcObject = null; }
+    if (scanStream) {
+      scanStream.getTracks().forEach(t => t.stop());
+      scanStream = null;
+    }
+    scannerWrap.classList.remove('show');
+    scanStatus.textContent = 'Escaneo detenido.';
+  }
+
+  // Fallback: analizar imagen subida (solo como puente; no decodifica sin lib extra)
+  // Aquí simplemente usamos la API de navegador para leer texto del nombre si el QR no está soportado.
+  // Si quieres decodificación real de imágenes, puedo integrar una librería CDN (html5-qrcode o qr-scanner).
+  fileInput.addEventListener('change', () => {
+    const f = fileInput.files && fileInput.files[0];
+    if (!f) return;
+    setStatus('Imagen recibida. (Para decodificación real puedo integrar una librería externa).');
+  });
+
+  // ======= Eventos =======
+  btnLoad.addEventListener('click', () => {
+    const u = urlInput.value.trim();
+    if (!u) { setStatus('Pega una URL.'); return; }
+    loadPlayerFrom(u);
+  });
+  btnPlay.addEventListener('click', playCurrent);
+  btnReveal.addEventListener('click', reveal);
+  btnMute.addEventListener('click', toggleMute);
+  btnScan.addEventListener('click', startScan);
+  btnStopScan.addEventListener('click', stopScan);
+
+  // Soporte ?u= en la URL
+  (function initFromQuery(){
+    const q = new URLSearchParams(location.search);
+    const u = q.get('u');
+    if (u) loadPlayerFrom(u);
+    else setStatus('esperando URL…');
+  })();
+</script>
 </body>
 </html>
