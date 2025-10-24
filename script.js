@@ -9,25 +9,22 @@ const scannerView = $('#scanner-view');
 const gameView = $('#game-view');
 const errorBox = $('#error-box'); 
 const readerElement = $('#reader');
-const urlInput = $('#urlInput'); 
+// const urlInput = $('#urlInput'); // Eliminado
 const playerContainer = $('#player-container');
 const iframeWrapper = $('#iframe-wrapper');
 // const statusText = $('#status-text'); // Eliminado
 const playButton = $('#play-button');
 const revealButton = $('#reveal-button');
-const scanButton = $('#scan-button'); // <<< NUEVO SELECTOR
+const scanButton = $('#scan-button'); 
 
 // --- Funciones de Utilidad ---
-function displayError(message) { /* Sin cambios */ 
-    errorBox.textContent = message; if (!message) { errorBox.classList.add('hidden'); return; }
-    errorBox.classList.remove('hidden'); setTimeout(() => errorBox.classList.add('hidden'), 3500); 
+function displayError(message) { 
+    errorBox.textContent = message;
+    if (!message) { errorBox.classList.add('hidden'); return; }
+    errorBox.classList.remove('hidden'); 
+    setTimeout(() => errorBox.classList.add('hidden'), 3500); 
 }
 
-/**
- * switchView v24:
- * - NO inicia scanner automáticamente.
- * - Muestra el botón de escanear.
- */
 function switchView(viewName) {
     console.log(`Switching view to: ${viewName}`); 
     if (viewName === 'scanner') {
@@ -44,22 +41,19 @@ function switchView(viewName) {
         playButton.classList.remove('bg-green-500', 'border-green-700'); 
         playButton.classList.add('bg-red-600', 'border-red-800', 'text-white'); 
         playButton.innerHTML = '▶️ DALE PLAY 🎶'; 
-        urlInput.value = ''; 
+        // urlInput ya no existe
         
-        // --- YA NO INICIA SCANNER AUTOMÁTICAMENTE ---
-        // setTimeout(startScanner, 300); // Eliminado
+        // Estado inicial scanner
+        readerElement.classList.add('hidden');    
+        scanButton.classList.remove('hidden'); 
 
-        // --- Asegurar estado inicial de la vista scanner ---
-        readerElement.classList.add('hidden');    // Ocultar lector
-        scanButton.classList.remove('hidden'); // Mostrar botón de escanear
+        // NO iniciar scanner aquí, esperar al botón
 
     } else if (viewName === 'game') {
         scannerView.classList.add('hidden');
         gameView.classList.remove('hidden');
-        // Asegurarse de detener el scanner si estaba activo
-        stopScanner(); 
+        stopScanner(); // Detener si estaba activo
         
-        // Estilo botón Play siempre rojo
         playButton.classList.remove('bg-green-500', 'border-green-700'); 
         playButton.classList.add('bg-red-600', 'border-red-800', 'text-white');
         playButton.innerHTML = '▶️ DALE PLAY 🎶'; 
@@ -70,29 +64,24 @@ function switchView(viewName) {
 }
 
 // --- Lógica del Escáner ---
-function onScanSuccess(decodedText, decodedResult) { /* Sin cambios */ 
+function onScanSuccess(decodedText, decodedResult) {
     console.log("Scan successful:", decodedText); 
-    stopScanner(); // Esto ahora también reseteará la UI del scanner (oculta reader, muestra botón)
-    setTimeout(() => {
+    stopScanner(); // Detener cámara (esto también resetea la UI del scanner)
+    
+    setTimeout(() => { // Pequeña pausa
         const parsed = parseService(decodedText); 
         if (parsed.service === 'youtube' || parsed.service === 'youtubemusic') { 
             current = { ...parsed, iframe: null }; 
             switchView('game'); 
         } else {
             displayError(`QR no válido. Solo YouTube.`); 
-            // NO reiniciar scanner automáticamente tras error
-            // setTimeout(startScanner, 2500); // Eliminado
+            // NO reiniciar scanner automáticamente
         }
     }, 100); 
 }
 
 function onScanFailure(error) { /* Silencio */ }
 
-/**
- * startScanner v24:
- * - Se llama al pulsar el botón.
- * - Oculta el botón, muestra el lector e inicia.
- */
 function startScanner() {
     if (!html5QrcodeScanner) { 
          console.error("Scanner requested but not initialized.");
@@ -112,10 +101,10 @@ function startScanner() {
 
     console.log("Attempting to start scanner via button..."); 
     
-    // --- NUEVO: Ocultar botón, mostrar lector ---
+    // Ocultar botón, mostrar lector
     scanButton.classList.add('hidden');
     readerElement.classList.remove('hidden');
-    readerElement.innerHTML = ""; // Limpiar por si acaso
+    readerElement.innerHTML = ""; 
 
     const config = { fps: 10, qrbox: { width: 250, height: 250 } };
     
@@ -139,7 +128,7 @@ function startScanner() {
             if(errorMsg) displayError(errorMsg); 
             if(!errorMsg.includes("already running")) isScannerRunning = false; 
             
-            // --- NUEVO: Si falla, revertir UI ---
+            // Revertir UI si falla
             readerElement.classList.add('hidden');
             scanButton.classList.remove('hidden');
         });
@@ -147,67 +136,49 @@ function startScanner() {
          console.error("Error starting scanner (Sync catch):", syncError); 
          displayError("Error inesperado al iniciar cámara.");
          isScannerRunning = false;
-         // --- NUEVO: Revertir UI ---
+         // Revertir UI
          readerElement.classList.add('hidden');
          scanButton.classList.remove('hidden');
     }
 }
 
-/**
- * stopScanner v24:
- * - Llama a clear().
- * - Resetea la UI (oculta reader, muestra botón scan).
- */
 function stopScanner() {
-    let wasRunning = isScannerRunning; // Guardar estado
-    isScannerRunning = false; // Marcar como detenido inmediatamente
+    let wasRunning = isScannerRunning; 
+    isScannerRunning = false; // Marcar como detenido
 
-    if (html5QrcodeScanner) { 
+    // Resetear UI del scanner (Ocultar reader, mostrar botón) SIEMPRE
+    if (readerElement) readerElement.classList.add('hidden');
+    if (scanButton) scanButton.classList.remove('hidden');
+
+    if (html5QrcodeScanner && wasRunning) { // Solo intentar detener si estaba corriendo
         console.log("Attempting to stop scanner..."); 
         try {
             html5QrcodeScanner.stop()
             .then(() => { 
                 console.log("Scanner stopped successfully via Promise."); 
-                // Llamar a clear() DESPUÉS de detener
                 if (html5QrcodeScanner && typeof html5QrcodeScanner.clear === 'function') {
-                    try {
-                        html5QrcodeScanner.clear(); 
-                        console.log("Scanner cleared.");
-                    } catch (clearError) {
-                         console.error("Error calling scanner.clear():", clearError);
-                    }
+                    try { html5QrcodeScanner.clear(); console.log("Scanner cleared."); } 
+                    catch (clearError) { console.error("Error calling scanner.clear():", clearError); }
                 }
             })
             .catch((err) => { 
-                if (!err || !err.message || !err.message.toLowerCase().includes("not scanning")) {
-                    console.warn("Error during scanner.stop() (Promise catch):", err); 
-                } else { 
-                    console.log("Stop called but scanner wasn't running."); 
-                }
-                // Intentar limpiar incluso si stop falla
+                if (!err || !err.message || !err.message.toLowerCase().includes("not scanning")) { console.warn("Error stopping scanner:", err); } 
+                else { console.log("Stop called but not scanning."); }
+                // Intentar limpiar igual
                 if (html5QrcodeScanner && typeof html5QrcodeScanner.clear === 'function') {
                      try { html5QrcodeScanner.clear(); console.log("Scanner cleared after stop error."); } 
-                     catch (clearError) { console.error("Error calling scanner.clear() after stop error:", clearError); }
+                     catch (clearError) { console.error("Error calling clear after stop error:", clearError); }
                  }
-            })
-            .finally(() => { // Asegurar reset de UI siempre
-                 if(readerElement) readerElement.classList.add('hidden');
-                 if(scanButton) scanButton.classList.remove('hidden');
             });
         } catch (e) { 
-            console.error("Exception calling scanner.stop():", e); 
-            // Limpieza manual como fallback y reset UI
-             if(readerElement) readerElement.classList.add('hidden');
-             if(scanButton) scanButton.classList.remove('hidden');
+            console.error("Exception stopping scanner:", e); 
         }
     } else {
-        // Si no existe el objeto, solo resetear UI
-        if(readerElement) readerElement.classList.add('hidden');
-        if(scanButton) scanButton.classList.remove('hidden');
-        console.log("Stop scanner requested but scanner object defunct."); 
+        console.log("Stop scanner requested but not running or scanner defunct."); 
     }
 }
 
+// --- Cargar URL desde Input ELIMINADO ---
 
 // --- Lógica del Juego ---
 function parseService(url) { /* Sin cambios */ 
@@ -217,7 +188,7 @@ function buildEmbed({ service, id }) { /* Sin cambios */
     if (service !== 'youtube' && service !== 'youtubemusic') return null; let src = ''; let title = 'YouTube Player'; let allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture; web-share'; const params = new URLSearchParams({ autoplay: '1', controls: '0', modestbranding: '1', rel: '0', playsinline: '1', enablejsapi: '1' }); try { if (location.origin && location.origin.startsWith('http')) params.set('origin', location.origin); } catch {} src = `https://www.youtube.com/embed/${id}?${params.toString()}`; const iframe = document.createElement('iframe'); iframe.src=src; iframe.title=title; iframe.loading='lazy'; iframe.allow=allow; iframe.allowFullscreen=true; iframe.style.borderRadius='12px'; return iframe;
 }
 function playSong() { /* Sin cambios */ 
-    console.log("playSong called"); if (!current.service || !current.id) { displayError("No hay video cargado."); return; } if (current.service !== 'youtube' && current.service !== 'youtubemusic') { displayError("Servicio no soportado."); return; } const iframe = buildEmbed(current); if (!iframe) { displayError("Error al crear reproductor."); return; } iframeWrapper.innerHTML = ''; iframeWrapper.appendChild(iframe); current.iframe = iframe; playButton.classList.add('hidden'); revealButton.classList.remove('hidden'); statusText.textContent = "Video Sonando..."; displayError(''); setTimeout(() => { if (!current.iframe) return; console.log("Sending 'playVideo' command"); const playMsg = JSON.stringify({ event:'command', func:'playVideo', args:[] }); current.iframe.contentWindow?.postMessage(playMsg, '*'); }, 500); 
+    console.log("playSong called"); if (!current.service || !current.id) { displayError("No hay video cargado."); return; } if (current.service !== 'youtube' && current.service !== 'youtubemusic') { displayError("Servicio no soportado."); return; } const iframe = buildEmbed(current); if (!iframe) { displayError("Error al crear reproductor."); return; } iframeWrapper.innerHTML = ''; iframeWrapper.appendChild(iframe); current.iframe = iframe; playButton.classList.add('hidden'); revealButton.classList.remove('hidden'); /* statusText ya no existe */ displayError(''); setTimeout(() => { if (!current.iframe) return; console.log("Sending 'playVideo' command"); const playMsg = JSON.stringify({ event:'command', func:'playVideo', args:[] }); current.iframe.contentWindow?.postMessage(playMsg, '*'); }, 500); 
 }
 function revealPlayer() { /* Sin cambios */ 
     console.log("revealPlayer called"); iframeWrapper.classList.add('revealed'); revealButton.textContent = "¡Revelado!"; revealButton.disabled = true; if(current.iframe) current.iframe.focus(); 
@@ -227,7 +198,6 @@ function revealPlayer() { /* Sin cambios */
 function initializeScanner() { /* Sin cambios */ 
      if (!html5QrcodeScanner) { try { if (!readerElement) throw new Error("Element '#reader' not found."); html5QrcodeScanner = new Html5Qrcode(qrCodeRegionId); console.log("Scanner initialized."); return true; } catch (e) { console.error("Fatal: Init scanner failed:", e); displayError("Error fatal lector QR."); if(scannerView) scannerView.innerHTML = "<p class='text-red-500 text-center'>Escáner no disponible.</p>"; return false; }} return true; 
  }
-
 window.onload = () => { 
      console.log("Window loaded."); 
      if (initializeScanner()) { 
@@ -239,7 +209,7 @@ window.onload = () => {
               console.error("Scan button not found!");
               displayError("Error: Botón de escaneo no encontrado.");
          }
-         switchView('scanner'); // Mostrar vista inicial (que ahora solo muestra el botón)
+         switchView('scanner'); // Mostrar vista inicial
      } else {
           console.error("Scanner initialization failed.");
      }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hitster LITE (v21 - QR Only)</title>
+    <title>Hitster LITE (v22 - QR Only)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css"> 
 </head>
@@ -16,19 +16,17 @@
         <div id="error-box" class="hidden p-3 rounded-xl text-base font-semibold text-center transition-all duration-300 bg-red-700"></div>
 
         <div id="scanner-view" class="space-y-4">
-            <h2 class="text-xl font-semibold text-white">Escanea Tarjeta:</h2>
+            <h2 class="text-xl font-semibold text-white">Escanea la Tarjeta:</h2>
+            <div id="reader" class="w-full aspect-square rounded-2xl overflow-hidden shadow-lg bg-gray-800 border border-gray-700">
+                </div> 
             
             <button id="scan-button" 
                     class="w-full py-3 px-8 font-bold rounded-full uppercase shadow-lg transition-all duration-200 ease-in-out transform hover:scale-105 
                            bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-800">
                 📷 Activar Escáner
             </button>
-
-            <div id="reader" class="hidden w-full aspect-square rounded-2xl overflow-hidden shadow-lg bg-gray-800 border border-gray-700">
-                </div> 
-
             
-            <p class="text-xs text-center text-gray-500">Solo YouTube y YouTube Music.</p>
+            <p class="text-xs text-center text-gray-500">Solo YouTube y YouTube Music.</p> 
         </div>
 
         <div id="game-view" class="hidden space-y-4">
