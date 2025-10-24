@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hitster LITE (v20 - YouTube Only)</title>
+    <title>Hitster LITE (v21 - QR Only)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css"> 
 </head>
@@ -12,22 +12,18 @@
 
     <div class="w-full max-w-md mx-auto space-y-6">
         <h1 class="text-4xl font-extrabold text-center text-white pt-4 tracking-tight">HITSTER LITE</h1>
-        <p class="text-center text-sm text-gray-400">Escanea QR o pega enlace de YouTube.</p>
-        <div id="message-box" class="hidden p-3 rounded-xl text-base font-semibold text-center transition-all duration-300"></div>
+        <p class="text-center text-sm text-gray-400">Escanea el código QR de YouTube.</p>
+        <div id="error-box" class="hidden p-3 rounded-xl text-base font-semibold text-center transition-all duration-300 bg-red-700"></div>
 
         <div id="scanner-view" class="space-y-4">
-            <h2 class="text-xl font-semibold text-white">Escanea Tarjeta:</h2>
+            <h2 class="text-xl font-semibold text-white">Escanea la Tarjeta:</h2>
             <div id="reader" class="w-full aspect-square rounded-2xl overflow-hidden shadow-lg bg-gray-800 border border-gray-700">
                 </div> 
-            <div class="flex gap-2">
-                 <input id="urlInput" type="url" placeholder="O pega la URL de YouTube aquí..." class="flex-grow bg-gray-800 text-white border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"/>
-                 <button onclick="loadFromInput()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm">Cargar</button>
-            </div>
             <p class="text-xs text-center text-gray-500">Solo YouTube y YouTube Music.</p>
         </div>
 
         <div id="game-view" class="hidden space-y-4">
-            <h2 class="text-xl font-semibold text-center text-white">¡Video Cargado!</h2>
+            <h2 class="text-xl font-semibold text-center text-white">¡Video Listo!</h2> 
             
              <div id="player-container">
                 <div id="iframe-wrapper">
@@ -35,10 +31,8 @@
             </div>
 
             <div id="controls" class="flex flex-col items-center gap-4">
-                 <p id="status-text" class="text-lg text-center text-gray-300">Presiona para iniciar el video</p>
-                 
                  <button onclick="playSong()" id="play-button"
-                        class="w-full py-3 px-8 font-bold rounded-full uppercase shadow-lg transition-all duration-200 ease-in-out transform hover:scale-105 border-2 text-white">
+                        class="w-full py-3 px-8 font-bold rounded-full uppercase shadow-lg transition-all duration-200 ease-in-out transform hover:scale-105 border-2 text-white bg-red-600 border-red-800">
                     ▶️ DALE PLAY 🎶
                 </button>
 
