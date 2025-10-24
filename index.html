@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hitster LITE (v14 - Reproductor Visible)</title>
+    <title>Hitster LITE (v16 - Finalísimo)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     
@@ -12,56 +12,30 @@
             --primary-color: #1DB954; /* Spotify Green */
             --youtube-color: #FF0000; /* YouTube Red */
         }
-        body {
-            background-color: #121212; /* Fondo oscuro */
-        }
-        /* Contenedor del reproductor (AHORA TAMAÑO NORMAL) */
+        body { background-color: #121212; }
         #player-container { 
-            position: relative;
-            width: 100%;
-            /* height: 80px; */ /* Eliminado */
-            height: 380px; /* Tamaño para ver reproductor completo */
-            border-radius: 12px;
-            /* overflow: hidden; */ /* Eliminado */
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
-            background-color: #000;
+            position: relative; width: 100%; height: 80px; 
+            border-radius: 12px; overflow: hidden; 
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7); background-color: #000;
         }
-        /* Wrapper del iframe (AHORA TAMAÑO NORMAL) */
         #iframe-wrapper {
-            position: absolute;
-            width: 100%;
-            height: 100%; /* Ocupa todo el contenedor */
-            /* top: -310px; */ /* Eliminado */
-            left: 0;
+            position: absolute; width: 100%; height: 400px; 
+            top: -310px; left: 0;
         }
-        #iframe-wrapper iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        /* Tapa inicial */
+        #iframe-wrapper iframe { width: 100%; height: 100%; border: none; }
         #cover-layer { 
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(0, 0, 0, 0.98));
-            transition: opacity 0.4s ease-in-out;
-            z-index: 10; /* Encima del iframe */
+            transition: opacity 0.4s ease-in-out; z-index: 10; 
         }
-         /* Clase para ocultar la tapa */
-        .cover-hidden {
-             opacity: 0;
-             pointer-events: none;
-        }
+        .cover-hidden { opacity: 0; pointer-events: none; }
     </style>
 </head>
 
 <body class="flex justify-center items-start min-h-screen p-4 font-sans text-gray-200">
 
     <div class="w-full max-w-md mx-auto space-y-6">
-        <h1 class="text-4xl font-extrabold text-center text-white pt-4 tracking-tight">HITSTER LITE (Debug)</h1>
+        <h1 class="text-4xl font-extrabold text-center text-white pt-4 tracking-tight">HITSTER LITE</h1>
         <p class="text-center text-sm text-gray-400">Escanea el QR o pega el enlace, luego presiona Tocar Música.</p>
 
         <div id="message-box" class="hidden p-3 rounded-xl text-base font-semibold text-center transition-all duration-300"></div>
@@ -84,19 +58,16 @@
 
                 <div id="cover-layer" class="flex flex-col justify-center items-center text-center p-4">
                     <div id="cover-icon" class="text-6xl mb-4" aria-label="Icono de Música">♫</div>
-                    
                     <p id="cover-text" class="text-xl font-semibold uppercase tracking-widest text-white mb-10">
                         ¡Escaneo exitoso! <br>Presiona para iniciar.
                     </p>
-                    
                     <button onclick="playSong()" id="play-button"
                             class="py-3 px-8 font-bold rounded-full uppercase shadow-lg transition-all duration-200 ease-in-out transform hover:scale-105 border-2">
                         TOCAR MÚSICA
                     </button>
-
                     <button onclick="revealPlayer()" id="reveal-button"
                             class="py-2 px-6 text-sm font-bold rounded-full uppercase shadow-md transition-transform duration-100 ease-in-out transform hover:scale-105 hidden 
-                                   bg-red-600 text-white border-2 border-red-800">
+                                   bg-red-600 text-white border-2 border-red-800 mt-4"> {/* Añadido margen superior */}
                         Revelar Pista 
                     </button>
                 </div>
@@ -154,11 +125,11 @@
                 displayMessage(''); 
                 current = { service: null, id: null, kind: null, iframe: null };
                 iframeWrapper.innerHTML = ''; 
-                coverLayer.classList.remove('cover-hidden'); // Mostrar tapa al volver
+                coverLayer.classList.remove('cover-hidden'); 
                 playButton.classList.remove('hidden'); 
                 revealButton.classList.add('hidden'); 
-                revealButton.disabled = false; // Habilitar botón revelar de nuevo
-                revealButton.textContent = "Revelar Pista"; // Resetear texto botón
+                revealButton.disabled = false; 
+                revealButton.textContent = "Revelar Pista"; 
                 coverText.innerHTML = "¡Escaneo exitoso! <br>Presiona para iniciar.";
                 playButton.classList.remove('bg-red-600', 'border-red-800');
                 playButton.classList.add('bg-green-500', 'border-green-700', 'text-white');
@@ -175,7 +146,7 @@
                     playButton.classList.add('bg-red-600', 'border-red-800', 'text-white');
                     coverIcon.style.color = "var(--youtube-color)";
                     coverIcon.innerHTML = '►'; 
-                } else { // Spotify
+                } else { // Spotify or Spotify Custom
                     playButton.classList.remove('bg-red-600', 'border-red-800');
                     playButton.classList.add('bg-green-500', 'border-green-700', 'text-white');
                     coverIcon.style.color = "var(--primary-color)";
@@ -189,33 +160,34 @@
         // --- Lógica del Escáner ---
         function onScanSuccess(decodedText, decodedResult) {
             stopScanner();
-            const parsed = parseService(decodedText);
+            const parsed = parseService(decodedText); 
             if (parsed.service && parsed.id) {
                 current = { ...parsed, iframe: null }; 
                 let serviceName = (parsed.service === 'youtube' || parsed.service === 'youtubemusic') ? 'YouTube' : 'Spotify';
-                displayMessage(`¡QR de ${serviceName} cargado!`, parsed.service === 'youtube' ? 'youtube' : 'success');
+                displayMessage(`¡QR de ${serviceName} cargado!`, (parsed.service.startsWith('spotify') ? 'success' : 'youtube')); 
                 switchView('game'); 
             } else {
-                displayMessage("QR no válido. No es un enlace de Spotify o YouTube.", "error");
-                setTimeout(startScanner, 1500); 
+                displayMessage(`QR no válido: ${decodedText}`, "error"); 
+                setTimeout(startScanner, 2500); 
             }
         }
 
         function onScanFailure(error) { /* Silencio */ }
 
-        function startScanner() {
+         function startScanner() {
              if (!html5QrcodeScanner) {
                  try { html5QrcodeScanner = new Html5Qrcode(qrCodeRegionId); } 
                  catch (e) { console.error("Init scanner failed:", e); displayMessage("Error lector QR.", "error"); return; }
             }
+            if (!readerElement || readerElement.offsetParent === null) {
+                 console.warn("Reader element not ready."); setTimeout(startScanner, 100); return;
+             }
             if (!isScannerRunning) {
-                 // Verificar estado antes de iniciar
-                if (typeof html5QrcodeScanner.getState === 'function' && html5QrcodeScanner.getState() === 2 /* SCANNING */) {
-                     console.warn("Scanner reported state SCANNING but isScannerRunning is false. Attempting stop first.");
-                     stopScanner(); 
-                     setTimeout(startScanner, 500); // Reintentar después de detener
-                     return;
-                 }
+                 // Verificar estado antes de iniciar (getState puede no existir en algunas versiones)
+                 /*if (typeof html5QrcodeScanner.getState === 'function' && html5QrcodeScanner.getState() === 2) {
+                     console.warn("Scanner state SCANNING but isScannerRunning false. Stopping first.");
+                     stopScanner(); setTimeout(startScanner, 500); return;
+                 }*/
                 const config = { fps: 10, qrbox: { width: 250, height: 250 } };
                 html5QrcodeScanner.start( { facingMode: "environment" }, config, onScanSuccess, onScanFailure)
                 .then(() => { isScannerRunning = true; console.log("Scanner started."); })
@@ -231,13 +203,13 @@
             }
         }
 
-        function stopScanner() {
+         function stopScanner() {
              if (html5QrcodeScanner && isScannerRunning) { 
                  try {
                       html5QrcodeScanner.stop()
-                         .then(() => { isScannerRunning = false; console.log("Scanner stopped."); readerElement.innerHTML = ""; })
-                         .catch((err) => { console.warn("Stop scanner error:", err); isScannerRunning = false; readerElement.innerHTML = ""; });
-                 } catch (e) { console.error("Stop scanner exception:", e); isScannerRunning = false; readerElement.innerHTML = ""; }
+                         .then(() => { isScannerRunning = false; console.log("Scanner stopped."); if(readerElement) readerElement.innerHTML = ""; })
+                         .catch((err) => { console.warn("Stop scanner error:", err); isScannerRunning = false; if(readerElement) readerElement.innerHTML = ""; });
+                 } catch (e) { console.error("Stop scanner exception:", e); isScannerRunning = false; if(readerElement) readerElement.innerHTML = ""; }
             } else { isScannerRunning = false; if(readerElement) readerElement.innerHTML = ""; }
         }
         
@@ -245,45 +217,107 @@
         function loadFromInput() {
             const url = urlInput.value.trim();
              if (!url) { displayMessage("Pega una URL válida.", "error"); return; }
-             const parsed = parseService(url);
+             const parsed = parseService(url); 
              if (parsed.service && parsed.id) {
                 current = { ...parsed, iframe: null }; 
                 let serviceName = (parsed.service === 'youtube' || parsed.service === 'youtubemusic') ? 'YouTube' : 'Spotify';
-                displayMessage(`URL de ${serviceName} cargada!`, parsed.service === 'youtube' ? 'youtube' : 'success');
+                displayMessage(`URL de ${serviceName} cargada!`, (parsed.service.startsWith('spotify') ? 'success' : 'youtube'));
                 switchView('game'); 
             } else { displayMessage("La URL no parece ser de Spotify o YouTube.", "error"); }
         }
 
         // --- Lógica del Juego ---
-        function parseService(url) {
+
+        /**
+         * Función parseService CORREGIDA v16 para reconocer tu link de Spotify
+         */
+         function parseService(url) {
              try {
-                const u = new URL(url); const host = u.hostname.replace(/^www\./,'').toLowerCase();
+                // Limpiar URL si tiene espacios al inicio/final
+                url = url.trim(); 
+                
+                // Intentar crear URL (puede fallar si no es URL válida)
+                let u = null;
+                try { u = new URL(url); } catch (e) { /* No es una URL estándar, seguir verificando */ }
+
+                const host = u ? u.hostname.replace(/^www\./,'').toLowerCase() : '';
+
+                // 1. YouTube / YT Music
                 if (host.includes('youtube.com') || host === 'youtu.be' || host.includes('music.youtube.com')) {
-                    let v = null; if (host === 'youtu.be') v = u.pathname.slice(1); else v = u.searchParams.get('v');
-                    if (!v && u.pathname.startsWith('/shorts/')) v = u.pathname.split('/')[2] || null;
-                    if (!v && u.pathname.startsWith('/embed/')) v = u.pathname.split('/')[2] || null;
-                    if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) return { service: host.includes('music.youtube.com') ? 'youtubemusic' : 'youtube', id: v };
+                    let v = null; 
+                    if (host === 'youtu.be') { v = u.pathname.slice(1).split('/')[0]; } 
+                    else { v = u.searchParams.get('v'); }
+                    if (!v && u.pathname.startsWith('/shorts/')) { v = u.pathname.split('/')[2] || null; }
+                    if (!v && u.pathname.startsWith('/embed/')) { v = u.pathname.split('/')[2] || null; }
+                    if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) { 
+                       return { service: host.includes('music.youtube.com') ? 'youtubemusic' : 'youtube', id: v };
+                    }
                 }
-                if (host.includes('spotify.com')) {
-                    const p = u.pathname.split('/').filter(Boolean); let t = null, i = null;
-                    if (p.length === 2 && p[0] === 'track') { t = 'track'; i = p[1]; } else if (p.length === 3 && p[0] === 'embed' && p[1] === 'track') { t = 'track'; i = p[2]; }
-                    if (t === 'track' && i && /^[a-zA-Z0-9]+$/.test(i)) return { service: 'spotify', id: i, kind: 'track' };
-                }
-                 const m = url.match(/https:\/\/open\.spotify\.com\/(embed\/track|track)\/([a-zA-Z0-9]+)/);
-                 if (m && m[2]) return { service: 'spotify', id: m[2], kind: 'track' };
+                
+                // --- CORRECCIÓN SPOTIFY ---
+                // 2. Spotify Estándar (open.spotify.com/track/... o /embed/track/...)
+                const spotifyStdMatch = url.match(/https:\/\/open\.spotify\.com\/(?:embed\/)?track\/([a-zA-Z0-9]+)/);
+                 if (spotifyStdMatch && spotifyStdMatch[1]) {
+                     return { service: 'spotify', id: spotifyStdMatch[1], kind: 'track' };
+                 }
+
+                // 3. Spotify - TU FORMATO (http://googleusercontent.com/spotify.com/...)
+                const spotifyCustomMatch = url.match(/http(s)?:\/\/open\.spotify\.com\/(.+)/); // Regex más genérico que captura el path
+                 if (spotifyCustomMatch && spotifyCustomMatch[2]) {
+                      // Asumimos que la parte después de .com/ es el identificador que necesitas
+                      // Lo guardamos como 'id', pero lo marcaremos como 'custom'
+                      // Necesitamos confirmar si este 'path' (spotifyCustomMatch[2]) es directamente usable en el embed URL
+                      // Por ahora, lo tratamos como un ID estándar, asumiendo que tu buildEmbed lo manejará
+                      
+                      // ¡Confirmación necesaria! Si tu script genera '.../embed/track/ID', el REGEX 2 ya lo captura.
+                      // Si genera ALGO MÁS, necesitamos ajustar buildEmbed o este parser.
+                      // Asumiendo que SÍ es un ID de track estándar lo que viene después:
+                      const potentialId = spotifyCustomMatch[2].split('/').pop(); // Tomar la última parte como ID
+                      if (potentialId && /^[a-zA-Z0-9]+$/.test(potentialId)) {
+                            // Si parece un ID válido, tratarlo como Spotify estándar
+                            // console.log("Matched custom Spotify, treating as standard track ID:", potentialId);
+                            // return { service: 'spotify', id: potentialId, kind: 'track' }; 
+                            
+                            // *** VERSIÓN ALTERNATIVA: Guardar la URL completa si es tu formato ***
+                            // Esto asume que buildEmbed sabe usar esta URL directamente.
+                             console.log("Matched custom Spotify URL:", url);
+                             return { service: 'spotify-custom-embed', id: url, kind: null }; // Guardamos la URL completa
+
+                      }
+                 }
+
+
+                // Si no coincide con nada
                 return { service: null, id: null };
-            } catch(e) { console.error("Parse URL Error:", e); return { service: null, id: null }; }
+            } catch(e) { 
+                // Manejar error si la URL inicial no era válida
+                console.error("Error parsing URL:", url, e); 
+                // Verificar si es tu formato específico ANTES de fallar
+                const spotifyCustomMatch = url.match(/http(s)?:\/\/open\.spotify\.com\/(.+)/);
+                 if (spotifyCustomMatch && spotifyCustomMatch[1]) {
+                      console.log("Matched custom Spotify URL (in catch):", url);
+                      return { service: 'spotify-custom-embed', id: url, kind: null }; 
+                 }
+                return { service: null, id: null }; 
+            }
         }
+
 
         function buildEmbed({ service, id, kind }) {
             let src = '', t = 'R', a = 'autoplay; encrypted-media; fullscreen; picture-in-picture; web-share';
             if (service === 'youtube' || service === 'youtubemusic') {
-                const p = new URLSearchParams({ autoplay: '1', controls: '1', /* OJO: controls=1 ahora */ modestbranding: '1', rel: '0', playsinline: '1', enablejsapi: '1' });
+                const p = new URLSearchParams({ autoplay: '1', controls: '0', modestbranding: '1', rel: '0', playsinline: '1', enablejsapi: '1' });
                 try { if (location.origin && location.origin.startsWith('http')) p.set('origin', location.origin); } catch {}
                 src = `https://www.youtube.com/embed/${id}?${p.toString()}`; t = 'YT Player';
             } else if (service === 'spotify') {
+                // Usa el ID estándar para crear el embed URL
                 src = `https://open.spotify.com/embed/$track/${id}?utm_source=generator&theme=0`; t = 'Spotify Player'; a = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture'; 
+            } else if (service === 'spotify-custom-embed') {
+                 // Usa la URL completa guardada en 'id' directamente
+                 src = id + '?utm_source=generator&theme=0'; // Añadir parámetros
+                 t = 'Spotify Player'; a = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
             } else { return null; } 
+            
             const f = document.createElement('iframe'); f.src=src; f.title=t; f.loading='lazy'; f.allow=a; f.allowFullscreen=true; f.style.borderRadius='12px'; 
             return f;
         }
@@ -293,24 +327,18 @@
             const iframe = buildEmbed(current);
             if (!iframe) { displayMessage("Error al crear reproductor.", "error"); return; }
             iframeWrapper.innerHTML = ''; iframeWrapper.appendChild(iframe); current.iframe = iframe; 
-            playButton.classList.add('hidden'); revealButton.classList.remove('hidden'); 
-            coverText.innerHTML = "Pista Sonando..."; displayMessage(''); 
             
-            // Ocultar la tapa AHORA que se pulsa play
-            coverLayer.classList.add('cover-hidden'); 
-            // Mostramos botón de revelar
-            revealButton.classList.remove('hidden'); 
-            // Asegurarse de que el botón Revelar esté habilitado
-            revealButton.disabled = false;
-            revealButton.textContent = "Revelar Pista"; 
+            playButton.classList.add('hidden');       
+            revealButton.classList.remove('hidden');   // Mostrar botón Revelar
+            coverText.innerHTML = "Pista Sonando..."; 
+            displayMessage(''); // Limpiar mensaje superior             
+            // La tapa (#cover-layer) se MANTIENE visible por defecto aquí.
         }
 
         function revealPlayer() {
-            // En esta versión, la tapa ya se oculta al dar Play.
-            // Así que esta función solo deshabilita el botón.
+            coverLayer.classList.add('cover-hidden'); // Oculta la tapa al pulsar Revelar
             revealButton.textContent = "¡Revelado!";
             revealButton.disabled = true;
-            console.log("Reproductor ya está visible."); 
         }
 
         // --- Inicialización ---
