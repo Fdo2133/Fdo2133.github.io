@@ -3,47 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hitster LITE (v17 - Clip Path)</title>
+    <title>Hitster LITE (v18 - Final)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     
-    <style>
-        :root {
-            --primary-color: #1DB954; /* Spotify Green */
-            --youtube-color: #FF0000; /* YouTube Red */
-        }
+    <style> /* CSS ESENCIAL (Limpio + Ocultación) */
+        :root { --primary-color: #1DB954; --youtube-color: #FF0000; }
         body { background-color: #121212; }
-        
-        /* Contenedor del reproductor (TAMAÑO NORMAL) */
         #player-container { 
-            position: relative; width: 100%; height: 380px; /* Tamaño para ver reproductor */
-            border-radius: 12px; 
-            /* overflow: hidden; */ /* Ya no es necesario aquí */
+            position: relative; width: 100%; height: 80px; 
+            border-radius: 12px; overflow: hidden; 
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7); background-color: #000;
         }
-        /* Wrapper del iframe (TAMAÑO NORMAL, PERO RECORTADO) */
-        #iframe-wrapper {
-            position: absolute; width: 100%; height: 100%; 
-            /* top: -310px; */ /* Eliminado */ 
-            left: 0;
-            /* ¡NUEVO TRUCO! Recorta todo excepto 1px arriba */
-            clip-path: inset(0 0 100% 0); 
-        }
-         /* Clase para quitar el recorte al revelar */
-        #iframe-wrapper.revealed {
-            clip-path: none; /* Muestra todo */
-        }
-
+        #iframe-wrapper { position: absolute; width: 100%; height: 400px; top: -310px; left: 0; }
         #iframe-wrapper iframe { width: 100%; height: 100%; border: none; }
-        
-        /* Tapa inicial */
         #cover-layer { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(0, 0, 0, 0.98));
-            transition: opacity 0.4s ease-in-out; z-index: 10; /* Encima del iframe */
-            /* Usar flex de Tailwind en el HTML en lugar de aquí */
+            transition: opacity 0.4s ease-in-out; z-index: 10; 
         }
-         /* Clase para ocultar la tapa (cuando se revela) */
         .cover-hidden { opacity: 0; pointer-events: none; }
     </style>
 </head>
@@ -68,10 +46,8 @@
         <div id="game-view" class="hidden space-y-6">
             <h2 class="text-xl font-semibold mb-4 text-center text-white">¡Es Hora de Jugar!</h2>
             <div id="player-container">
-                {/* El iframe se insertará aquí, inicialmente recortado */}
-                <div id="iframe-wrapper"></div> 
+                 <div id="iframe-wrapper"></div> 
                 
-                {/* La Tapa con los botones */}
                 <div id="cover-layer" class="flex flex-col justify-center items-center text-center p-4">
                     <div id="cover-icon" class="text-6xl mb-4" aria-label="Icono">♫</div>
                     <p id="cover-text" class="text-xl font-semibold uppercase tracking-widest text-white mb-10">
@@ -114,79 +90,57 @@
 
         // --- Funciones ---
         function displayMessage(message, type = 'info') { /* Sin cambios */ 
-            messageBox.textContent = message;
-            messageBox.classList.remove('hidden', 'bg-red-700', 'bg-green-700', 'bg-blue-500');
-            if (!message) { messageBox.classList.add('hidden'); return; }
-            messageBox.classList.remove('hidden'); 
-            if (type === 'error') {
-                messageBox.classList.add('bg-red-700');
-                setTimeout(() => messageBox.classList.add('hidden'), 3000);
-            } else if (type === 'success') { messageBox.classList.add('bg-green-700'); } 
-              else if (type === 'youtube') { messageBox.classList.add('bg-red-700'); } 
-              else { messageBox.classList.add('bg-blue-500'); }
+            messageBox.textContent = message; messageBox.classList.remove('hidden', 'bg-red-700', 'bg-green-700', 'bg-blue-500');
+            if (!message) { messageBox.classList.add('hidden'); return; } messageBox.classList.remove('hidden'); 
+            if (type === 'error') { messageBox.classList.add('bg-red-700'); setTimeout(() => messageBox.classList.add('hidden'), 3000); } 
+            else if (type === 'success') { messageBox.classList.add('bg-green-700'); } else if (type === 'youtube') { messageBox.classList.add('bg-red-700'); } 
+            else { messageBox.classList.add('bg-blue-500'); }
         }
-
         function switchView(viewName) { /* Sin cambios */ 
             if (viewName === 'scanner') {
-                gameView.classList.add('hidden'); scannerView.classList.remove('hidden');
-                displayMessage(''); current = { service: null, id: null, kind: null, iframe: null };
-                iframeWrapper.innerHTML = ''; iframeWrapper.classList.remove('revealed'); // Quitar revelado
+                gameView.classList.add('hidden'); scannerView.classList.remove('hidden'); displayMessage(''); 
+                current = { service: null, id: null, kind: null, iframe: null }; iframeWrapper.innerHTML = ''; 
                 coverLayer.classList.remove('cover-hidden'); playButton.classList.remove('hidden'); 
-                revealButton.classList.add('hidden'); revealButton.disabled = false; 
-                revealButton.textContent = "Revelar Pista"; 
+                revealButton.classList.add('hidden'); revealButton.disabled = false; revealButton.textContent = "Revelar Pista"; 
                 coverText.innerHTML = "¡Escaneo exitoso! <br>Presiona para iniciar.";
-                playButton.classList.remove('bg-red-600', 'border-red-800');
-                playButton.classList.add('bg-green-500', 'border-green-700', 'text-white');
+                playButton.classList.remove('bg-red-600', 'border-red-800'); playButton.classList.add('bg-green-500', 'border-green-700', 'text-white');
                 coverIcon.style.color = "var(--primary-color)"; coverIcon.innerHTML = '♫';
                 urlInput.value = ''; startScanner(); 
             } else if (viewName === 'game') {
-                scannerView.classList.add('hidden'); gameView.classList.remove('hidden');
-                stopScanner(); 
+                scannerView.classList.add('hidden'); gameView.classList.remove('hidden'); stopScanner(); 
                 if (current.service === 'youtube' || current.service === 'youtubemusic') {
-                    playButton.classList.remove('bg-green-500', 'border-green-700');
-                    playButton.classList.add('bg-red-600', 'border-red-800', 'text-white');
+                    playButton.classList.remove('bg-green-500', 'border-green-700'); playButton.classList.add('bg-red-600', 'border-red-800', 'text-white');
                     coverIcon.style.color = "var(--youtube-color)"; coverIcon.innerHTML = '►'; 
                 } else { 
-                    playButton.classList.remove('bg-red-600', 'border-red-800');
-                    playButton.classList.add('bg-green-500', 'border-green-700', 'text-white');
+                    playButton.classList.remove('bg-red-600', 'border-red-800'); playButton.classList.add('bg-green-500', 'border-green-700', 'text-white');
                     coverIcon.style.color = "var(--primary-color)"; coverIcon.innerHTML = '♫'; 
                 }
                  playButton.classList.remove('hidden'); revealButton.classList.add('hidden'); 
             }
         }
-
         // --- Lógica Escáner ---
         function onScanSuccess(decodedText, decodedResult) { /* Sin cambios */ 
             stopScanner(); const parsed = parseService(decodedText); 
-            if (parsed.service && parsed.id) {
-                current = { ...parsed, iframe: null }; 
-                let serviceName = (parsed.service === 'youtube' || parsed.service === 'youtubemusic') ? 'YouTube' : 'Spotify';
-                displayMessage(`¡QR de ${serviceName} cargado!`, (parsed.service.startsWith('spotify') ? 'success' : 'youtube')); 
-                switchView('game'); 
-            } else { displayMessage(`QR no válido: ${decodedText}`, "error"); setTimeout(startScanner, 2500); }
+            if (parsed.service && parsed.id) { current = { ...parsed, iframe: null }; let serviceName = (parsed.service === 'youtube' || parsed.service === 'youtubemusic') ? 'YouTube' : 'Spotify'; displayMessage(`¡QR de ${serviceName} cargado!`, (parsed.service.startsWith('spotify') ? 'success' : 'youtube')); switchView('game'); } 
+            else { displayMessage(`QR no válido: ${decodedText}`, "error"); setTimeout(startScanner, 2500); }
         }
         function onScanFailure(error) { /* Silencio */ }
         function startScanner() { /* Sin cambios */ 
              if (!html5QrcodeScanner) { try { html5QrcodeScanner = new Html5Qrcode(qrCodeRegionId); } catch (e) { console.error("Init scanner failed:", e); displayMessage("Error lector QR.", "error"); return; }}
              if (!readerElement || readerElement.offsetParent === null) { console.warn("Reader element not ready."); setTimeout(startScanner, 100); return; }
              if (!isScannerRunning) {
-                 /*if (typeof html5QrcodeScanner.getState === 'function' && html5QrcodeScanner.getState() === 2) { console.warn("Scanner reported SCANNING but isScannerRunning false. Stopping first."); stopScanner(); setTimeout(startScanner, 500); return; }*/
                 const config = { fps: 10, qrbox: { width: 250, height: 250 } };
                 html5QrcodeScanner.start( { facingMode: "environment" }, config, onScanSuccess, onScanFailure)
                 .then(() => { isScannerRunning = true; console.log("Scanner started."); })
-                .catch(err => {
-                    console.error("Error starting scanner:", err); let errorMsg = "No se pudo iniciar la cámara.";
-                    if (err.name === 'NotAllowedError') errorMsg = "Permiso de cámara denegado."; else if (err.name === 'NotFoundError') errorMsg = "No se encontró cámara."; else if (err.name === 'NotReadableError') errorMsg = "La cámara está en uso.";
-                    displayMessage(errorMsg, "error"); isScannerRunning = false; 
-                });
+                .catch(err => { console.error("Error starting scanner:", err); let eM = "No se pudo iniciar cámara."; if (err.name === 'NotAllowedError') eM = "Permiso cámara denegado."; else if (err.name === 'NotFoundError') eM = "No se encontró cámara."; else if (err.name === 'NotReadableError') eM = "Cámara en uso."; displayMessage(eM, "error"); isScannerRunning = false; });
             }
         }
         function stopScanner() { /* Sin cambios */ 
              if (html5QrcodeScanner && isScannerRunning) { try { html5QrcodeScanner.stop().then(() => { isScannerRunning = false; console.log("Scanner stopped."); if(readerElement) readerElement.innerHTML = ""; }).catch((err) => { console.warn("Stop scanner error:", err); isScannerRunning = false; if(readerElement) readerElement.innerHTML = ""; }); } catch (e) { console.error("Stop scanner exception:", e); isScannerRunning = false; if(readerElement) readerElement.innerHTML = ""; }} else { isScannerRunning = false; if(readerElement) readerElement.innerHTML = ""; }
         }
         function loadFromInput() { /* Sin cambios */ 
-            const url = urlInput.value.trim(); if (!url) { displayMessage("Pega una URL válida.", "error"); return; } const parsed = parseService(url); 
-             if (parsed.service && parsed.id) { current = { ...parsed, iframe: null }; let serviceName = (parsed.service === 'youtube' || parsed.service === 'youtubemusic') ? 'YouTube' : 'Spotify'; displayMessage(`URL de ${serviceName} cargada!`, (parsed.service.startsWith('spotify') ? 'success' : 'youtube')); switchView('game'); } else { displayMessage("La URL no parece ser de Spotify o YouTube.", "error"); }
+            const url = urlInput.value.trim(); if (!url) { displayMessage("Pega URL.", "error"); return; } const parsed = parseService(url); 
+             if (parsed.service && parsed.id) { current = { ...parsed, iframe: null }; let sN = (parsed.service === 'youtube' || parsed.service === 'youtubemusic') ? 'YouTube' : 'Spotify'; displayMessage(`URL ${sN} cargada!`, (parsed.service.startsWith('spotify') ? 'success' : 'youtube')); switchView('game'); } else { displayMessage("URL no válida.", "error"); }
         }
         
         // --- Lógica del Juego ---
@@ -194,71 +148,81 @@
              try {
                 url = url.trim(); let u = null; try { u = new URL(url); } catch (e) {} const host = u ? u.hostname.replace(/^www\./,'').toLowerCase() : '';
                 if (host.includes('youtube.com') || host === 'youtu.be' || host.includes('music.youtube.com')) {
-                    let v = null; if (host === 'youtu.be') { v = u.pathname.slice(1).split('/')[0]; } else { v = u.searchParams.get('v'); }
-                    if (!v && u.pathname.startsWith('/shorts/')) { v = u.pathname.split('/')[2] || null; } if (!v && u.pathname.startsWith('/embed/')) { v = u.pathname.split('/')[2] || null; }
-                    if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) return { service: host.includes('music.youtube.com') ? 'youtubemusic' : 'youtube', id: v };
-                }
-                const spotifyStdMatch = url.match(/https:\/\/open\.spotify\.com\/(?:embed\/)?track\/([a-zA-Z0-9]+)/); if (spotifyStdMatch && spotifyStdMatch[1]) return { service: 'spotify', id: spotifyStdMatch[1], kind: 'track' };
-                const spotifyCustomMatch = url.match(/http(s)?:\/\/open\.spotify\.com\/(.+)/); 
-                 if (spotifyCustomMatch && spotifyCustomMatch[1]) {
-                      const potentialId = spotifyCustomMatch[2].split('/').pop(); 
-                      if (potentialId && /^[a-zA-Z0-9]+$/.test(potentialId) && spotifyCustomMatch[2].includes('track')) { // Asegurar que sea un track
-                           return { service: 'spotify', id: potentialId, kind: 'track' }; 
-                      } else { // Si no podemos extraer un ID de track, usar la URL completa como custom
-                           console.log("Matched custom Spotify URL, using full URL:", url);
-                           return { service: 'spotify-custom-embed', id: url, kind: null }; 
-                      }
-                 }
+                    let v = null; if (host === 'youtu.be') { v = u.pathname.slice(1).split('/')[0]; } else { v = u.searchParams.get('v'); } if (!v && u.pathname.startsWith('/shorts/')) { v = u.pathname.split('/')[2] || null; } if (!v && u.pathname.startsWith('/embed/')) { v = u.pathname.split('/')[2] || null; } if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) return { service: host.includes('music.youtube.com') ? 'youtubemusic' : 'youtube', id: v };
+                } const spotifyStdMatch = url.match(/https:\/\/open\.spotify\.com\/(?:embed\/)?track\/([a-zA-Z0-9]+)/); if (spotifyStdMatch && spotifyStdMatch[1]) return { service: 'spotify', id: spotifyStdMatch[1], kind: 'track' };
+                const spotifyCustomMatch = url.match(/http(s)?:\/\/open\.spotify\.com\/(.+)/); if (spotifyCustomMatch && spotifyCustomMatch[1]) { const pId = spotifyCustomMatch[2].split('/').pop(); if (pId && /^[a-zA-Z0-9]+$/.test(pId) && spotifyCustomMatch[2].includes('track')) { return { service: 'spotify', id: pId, kind: 'track' }; } else { console.log("Matched custom Spotify URL:", url); return { service: 'spotify-custom-embed', id: url, kind: null }; }}
                 return { service: null, id: null };
-            } catch(e) { 
-                console.error("Error parsing URL:", url, e); 
-                const spotifyCustomMatch = url.match(/http(s)?:\/\/open\.spotify\.com\/(.+)/);
-                 if (spotifyCustomMatch && spotifyCustomMatch[1]) { console.log("Matched custom Spotify URL (in catch):", url); return { service: 'spotify-custom-embed', id: url, kind: null }; }
-                return { service: null, id: null }; 
-            }
+            } catch(e) { console.error("Parse URL Error:", url, e); const sM = url.match(/http(s)?:\/\/open\.spotify\.com\/(.+)/); if (sM && sM[1]) { console.log("Matched custom Spotify URL (catch):", url); return { service: 'spotify-custom-embed', id: url, kind: null }; } return { service: null, id: null }; }
         }
         function buildEmbed({ service, id, kind }) { /* Sin cambios */ 
             let src = '', t = 'R', a = 'autoplay; encrypted-media; fullscreen; picture-in-picture; web-share';
-            if (service === 'youtube' || service === 'youtubemusic') {
-                const p = new URLSearchParams({ autoplay: '1', controls: '0', modestbranding: '1', rel: '0', playsinline: '1', enablejsapi: '1' });
-                try { if (location.origin && location.origin.startsWith('http')) p.set('origin', location.origin); } catch {}
-                src = `https://www.youtube.com/embed/${id}?${p.toString()}`; t = 'YT Player';
-            } else if (service === 'spotify') {
-                src = `https://open.spotify.com/embed/$track/${id}?utm_source=generator&theme=0`; t = 'Spotify Player'; a = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture'; 
-            } else if (service === 'spotify-custom-embed') {
-                 src = id + '?utm_source=generator&theme=0'; t = 'Spotify Player'; a = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+            if (service === 'youtube' || service === 'youtubemusic') { const p = new URLSearchParams({ autoplay: '1', controls: '0', modestbranding: '1', rel: '0', playsinline: '1', enablejsapi: '1' }); try { if (location.origin && location.origin.startsWith('http')) p.set('origin', location.origin); } catch {} src = `https://www.youtube.com/embed/${id}?${p.toString()}`; t = 'YT Player';
+            } else if (service === 'spotify') { src = `https://open.spotify.com/embed/$track/${id}?utm_source=generator&theme=0`; t = 'Spotify Player'; a = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture'; 
+            } else if (service === 'spotify-custom-embed') { src = id + '?utm_source=generator&theme=0'; t = 'Spotify Player'; a = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
             } else { return null; } 
-            const f = document.createElement('iframe'); f.src=src; f.title=t; f.loading='lazy'; f.allow=a; f.allowFullscreen=true; f.style.borderRadius='12px'; 
-            return f;
+            const f = document.createElement('iframe'); f.src=src; f.title=t; f.loading='lazy'; f.allow=a; f.allowFullscreen=true; f.style.borderRadius='12px'; return f;
         }
 
-        function playSong() { /* Sin cambios */ 
+        /**
+         * playSong CORREGIDO v18: Envía comando 'playVideo' a YouTube
+         */
+        function playSong() {
+            console.log("playSong called"); // DEBUG
             if (!current.service || !current.id) { displayMessage("No hay pista cargada.", "error"); return; }
+            
             const iframe = buildEmbed(current);
             if (!iframe) { displayMessage("Error al crear reproductor.", "error"); return; }
-            iframeWrapper.innerHTML = ''; iframeWrapper.appendChild(iframe); current.iframe = iframe; 
-            playButton.classList.add('hidden'); revealButton.classList.remove('hidden'); 
-            coverText.innerHTML = "Pista Sonando..."; displayMessage(''); 
-            // La tapa (#cover-layer) se MANTIENE visible por defecto aquí.
+            
+            iframeWrapper.innerHTML = ''; 
+            iframeWrapper.appendChild(iframe); 
+            current.iframe = iframe; // Guardar referencia
+            
+            // Actualizar UI: Ocultar Play, Mostrar Revelar
+            playButton.classList.add('hidden');       
+            revealButton.classList.remove('hidden');   
+            coverText.innerHTML = "Pista Sonando..."; 
+            displayMessage(''); // Limpiar mensaje superior
+
+            // La tapa (#cover-layer) sigue visible por defecto.
+
+            // --- INTENTO DE PLAY EXPLÍCITO ---
+            // Darle un pequeño respiro al iframe para cargar antes de enviar comandos
+            setTimeout(() => {
+                if (!current.iframe) return; // Salir si el usuario escaneó otra cosa mientras esperaba
+
+                if (current.service === 'youtube' || current.service === 'youtubemusic') {
+                    console.log("Sending 'playVideo' command to YouTube iframe"); // DEBUG
+                    const playMsg = JSON.stringify({ event:'command', func:'playVideo', args:[] });
+                    // Usar '?' para evitar error si contentWindow es null (iframe no cargado)
+                    current.iframe.contentWindow?.postMessage(playMsg, '*'); 
+                } 
+                else if (current.service.startsWith('spotify')) {
+                     console.log("Focusing Spotify iframe (autoplay might still require interaction)"); // DEBUG
+                     // Spotify es menos fiable con autoplay programático
+                     current.iframe.focus(); 
+                     // Podríamos añadir un mensaje indicando que si no suena, revele y pulse play
+                     // displayMessage('Spotify cargado. Si no suena, revela y pulsa play.', 'info');
+                }
+            }, 500); // Esperar 500ms (medio segundo)
         }
 
-        function revealPlayer() { /* Sin cambios */ 
-            iframeWrapper.classList.add('revealed'); // QUITA EL CLIP-PATH
+        /**
+         * revealPlayer CORREGIDO v18: Ahora sí oculta la tapa
+         */
+        function revealPlayer() { 
+            console.log("revealPlayer called"); // DEBUG
             coverLayer.classList.add('cover-hidden'); // Oculta la tapa
             revealButton.textContent = "¡Revelado!";
             revealButton.disabled = true;
+            // Opcional: enfocar el iframe por si el usuario necesita interactuar (Spotify)
+             if(current.iframe) current.iframe.focus();
         }
 
         // --- Inicialización ---
         window.onload = () => { /* Sin cambios */ 
-             try {
-                 html5QrcodeScanner = new Html5Qrcode(qrCodeRegionId);
-                 switchView('scanner'); 
-             } catch (e) {
-                  console.error("Init scanner failed:", e);
-                  displayMessage("Error lector QR.", "error");
-                  if(scannerView) scannerView.innerHTML = "<p class='text-red-500 text-center'>Escáner no disponible.</p>";
-             }
+             console.log("Window loaded. Initializing scanner..."); // DEBUG
+             try { html5QrcodeScanner = new Html5Qrcode(qrCodeRegionId); switchView('scanner'); } 
+             catch (e) { console.error("Init scanner failed:", e); displayMessage("Error lector QR.", "error"); if(scannerView) scannerView.innerHTML = "<p class='text-red-500 text-center'>Escáner no disponible.</p>"; }
         };
     </script>
 </body>
